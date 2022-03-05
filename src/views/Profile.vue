@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container d-flex">
     <Sidebar />
 
     <div class="profile-container">
@@ -50,9 +50,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.container {
-  @include flex(row, center, normal);
-}
 
 .profile-container {
   @include size(100%, 100%);

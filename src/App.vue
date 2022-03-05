@@ -12,6 +12,11 @@
 @import './styles/layout.scss';
 @import './styles/font.scss';
 @import './styles/color.scss';
+
+main{
+  max-width: 1200px;
+  margin: 0 auto;
+}
 </style>
 
 <script>

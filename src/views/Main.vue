@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container d-flex">
     <Sidebar />
     <div class="main">
       <!-- title -->
@@ -7,7 +7,7 @@
         <span class="title">首頁</span>
       </div>
       <!-- 推文區域 -->
-      <div v-modal="tweet" class="tweet-area">
+      <div class="tweet-area">
         <div class="user-avatar">
           <router-link to="/profile" >
             <img class="avatar" :src="currentUser.avatar | nullAvatar" alt="預設的頭像" />
@@ -105,12 +105,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-}
-
 .main {
   @include size(100%, 100%);
   max-width: 600px;
