@@ -48,7 +48,7 @@ const routes = [
   {
     path: '/regist',
     name: 'user-regist',
-    component: () => import('../views/UserRegist.vue'),
+    component: () => import('../views/UserRegist.vue')
   },
   {
     path: '/setting',
@@ -72,6 +72,12 @@ const routes = [
     name: 'admin-users',
     component: () => import('../views/AdminUsers.vue'),
     beforeEnter: authorizeIsAdmin
+  },
+  {
+    path: '/chatroom',
+    name: 'chatroom',
+    component: () => import('../views/ChatRoom.vue'),
+    beforeEnter: authorizeIsUser
   },
   {
     path: '/profile',
