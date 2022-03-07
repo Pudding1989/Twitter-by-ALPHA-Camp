@@ -1,6 +1,5 @@
 <template>
   <transition-group tag="div" class="toaster" name="toast">
-    <!-- account 已重複註冊 -->
     <div
       v-for="(toast, index) in toastList"
       :key="index"
