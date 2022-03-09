@@ -200,9 +200,9 @@ export default {
 <style lang="scss" scoped>
 .sidebar-container {
   max-width: 196px;
-  height: 100%;
+  height: 100vh;
   @include flex(column, flex-start, flex-start);
-  @include margin(4px, 0, 0, 53px);
+  @include margin(4px, 0, 0, 18px);
 }
 
 .sidebar-header {
@@ -315,9 +315,9 @@ a {
 }
 
 .logout-item {
-  position: fixed;
+  position: absolute;
   bottom: 17px;
-  @include size(80px, 26px);
+  line-height: 26px;
   margin-left: 8px;
   display: flex;
   align-items: center;
@@ -355,6 +355,11 @@ a {
 }
 
 @media screen and (min-width: $breakpoint) {
+  .sidebar-container {
+    max-width: 196px;
+    margin-left: 53px;
+  }
+
   .item-name {
     display: initial;
   }
