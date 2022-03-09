@@ -4,10 +4,10 @@
   --hover-color: #f24405;
   --theme-white: #f9b49b;
   --main-text: #1c1c1c;
-  --theme-line: #E6ECF0;
+  --theme-line: #e6ecf0;
   --just-white: #ffffff;
-  --valid:#50B5FF;
-  --invalid:#FC5A5A;
+  --valid: #50b5ff;
+  --invalid: #fc5a5a;
   --info: #657786;
   --placeholder: #9197a3;
   // user login and regist page
@@ -21,8 +21,13 @@
   // for modal reply
   --avatar-connect: #ccd6dd;
   // right column
-  --column-background-color: #F5F8FA;
-  --avatar-img-background: #C4C4C4;
+  --column-background-color: #f5f8fa;
+  --avatar-img-background: #c4c4c4;
   // profile like list
-  --like-icon: #E0245E;
+  --like-icon: #e0245e;
+  // chat room
+  --dark-100: #171725;
+  --dark-70: #92929d;
+  --theme-secondary: #6c757d;
+  --pill-background: #e5e5e5;
 }

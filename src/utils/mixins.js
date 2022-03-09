@@ -1,9 +1,9 @@
-import moment from "moment"
+import moment from 'moment'
 
 export const fromNowFilter = {
   filters: {
-    fromNow (datetime) {
-      return datetime ? moment(datetime).fromNow() : '-'
+    fromNow(datetime) {
+      return datetime ? moment(datetime).locale('zh-tw').fromNow() : '-'
     }
   }
 }
@@ -45,6 +45,18 @@ export const nullCoverFilter = {
       ]
 
       return imgSrc || coverImg[Math.floor(Math.random() * coverImg.length)]
+    }
+  }
+}
+
+export const messageTimeFilter = {
+  filters: {
+    messageTime(nowTime) {
+      if (moment(nowTime).isValid()) {
+        return moment(nowTime).locale('zh-tw').format('a h:mm')
+      } else {
+        return '未能取得正確時間'
+      }
     }
   }
 }
