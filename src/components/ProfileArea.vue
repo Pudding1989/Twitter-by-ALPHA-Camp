@@ -158,7 +158,7 @@ export default {
       avatar: '',
       isNotify: true,
       isFollowed: '',
-      isSelf: ''
+      isSelf: true
     }
   },
 
@@ -251,9 +251,9 @@ export default {
 
   created() {
     this.fetchAccount(),
-    this.$bus.$on('submit-profile',()=>{
-      this.fetchAccount()
-    })
+      this.$bus.$on('submit-profile', () => {
+        this.fetchAccount()
+      })
   },
   watch: {
     '$route.path'() {
