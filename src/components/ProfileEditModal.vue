@@ -223,6 +223,7 @@
 
 <script>
 import userAPI from '../apis/user'
+import { mapState } from 'vuex'
 
 export default {
   data() {
@@ -280,31 +281,12 @@ export default {
       }
     },
 
-    async fetchProfile() {
-      try {
-        const { data } = await userAPI.getCurrent()
-
-        if (data.status !== 'success') {
-          this.$bus.$emit('toast', {
-            icon: 'error',
-            title: '無法取得個人資料'
-          })
-          throw new Error(data.message)
-        }
-
-        const { id, cover, avatar, name, introduction } = data.data
-        this.id = id
-        this.coverImg = cover
-        this.avatarImg = avatar
-        this.name = name
-        this.description = introduction
-      } catch (error) {
-        console.log(error)
-        this.$bus.$emit('toast', {
-          icon: 'error',
-          title: `${error}`
-        })
-      }
+    fetchProfile() {
+      this.id = this.currentUser.id
+      this.coverImg = this.currentUser.cover
+      this.avatarImg = this.currentUser.avatar
+      this.name = this.currentUser.name
+      this.description = this.currentUser.introduction
     },
 
     async submitProfile(event) {
@@ -327,7 +309,7 @@ export default {
           return
         }
 
-        if (this.description &&  this.description.length > 160) {
+        if (this.description && this.description.length > 160) {
           this.descriptionHint = true
           this.$bus.$emit('toast', {
             icon: 'error',
@@ -350,12 +332,11 @@ export default {
           })
           this.isProcessing = false
           this.$bus.$emit('submit-profile', true)
-          this.$router.push({path:'/profile'})
-          this.modal=false
+          this.$router.push({ path: '/profile' })
+          this.modal = false
         } else {
           throw new Error(data.message)
         }
-        
       } catch (error) {
         this.isProcessing = false
         console.log(error)
@@ -368,6 +349,8 @@ export default {
   },
 
   computed: {
+    ...mapState(['currentUser']),
+
     nameCount() {
       if (this.name) {
         this.name.length >= 160 && (this.descriptionHint = true)
@@ -392,6 +375,7 @@ export default {
   created() {
     this.fetchProfile()
     this.$bus.$on('profileEditModal', () => {
+      this.fetchProfile()
       this.modal = true
     })
   },
