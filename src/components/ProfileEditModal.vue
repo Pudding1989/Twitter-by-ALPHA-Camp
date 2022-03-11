@@ -281,12 +281,13 @@ export default {
       }
     },
 
-    fetchProfile() {
-      this.id = this.currentUser.id
-      this.coverImg = this.currentUser.cover
-      this.avatarImg = this.currentUser.avatar
-      this.name = this.currentUser.name
-      this.description = this.currentUser.introduction
+    fetchProfile(id, cover, avatar, name, description) {
+      console.log('fetchProfile', id)
+      this.id = id
+      this.coverImg = cover
+      this.avatarImg = avatar
+      this.name = name
+      this.description = description
     },
 
     async submitProfile(event) {
@@ -326,14 +327,14 @@ export default {
         })
 
         if (data.status === 'success') {
+          this.$bus.$emit('submit-profile', true)
+          this.isProcessing = false
+          this.modal = false
+          this.$router.push({ path: '/profile' })
           this.$bus.$emit('toast', {
             icon: 'success',
             title: '已儲存成功！！'
           })
-          this.isProcessing = false
-          this.$bus.$emit('submit-profile', true)
-          this.$router.push({ path: '/profile' })
-          this.modal = false
         } else {
           throw new Error(data.message)
         }
@@ -374,10 +375,13 @@ export default {
 
   created() {
     this.fetchProfile()
-    this.$bus.$on('profileEditModal', () => {
-      this.fetchProfile()
-      this.modal = true
-    })
+    this.$bus.$on(
+      'profileEditModal',
+      ({ id, cover, avatar, name, description }) => {
+        this.fetchProfile(id, cover, avatar, name, description)
+        this.modal = true
+      }
+    )
   },
 
   beforeDestroy() {

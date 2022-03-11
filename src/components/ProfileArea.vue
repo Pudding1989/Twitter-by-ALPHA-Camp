@@ -238,6 +238,16 @@ export default {
       } catch (error) {
         console.log(error)
       }
+    },
+
+    profileEditModal() {
+      this.$bus.$emit('profileEditModal', {
+        id: this.id,
+        cover: this.cover,
+        avatar: this.avatar,
+        name: this.name,
+        description: this.introduction
+      })
     }
   },
 
