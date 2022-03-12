@@ -282,7 +282,6 @@ export default {
     },
 
     fetchProfile(id, cover, avatar, name, description) {
-      console.log('fetchProfile', id)
       this.id = id
       this.coverImg = cover
       this.avatarImg = avatar

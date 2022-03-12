@@ -184,7 +184,6 @@ export default {
         }
 
         const { data } = await userAPI.getProfile({ userId: id })
-        // console.log('data', data)
 
         const {
           name,
@@ -198,6 +197,10 @@ export default {
           isFollowed,
           isSelf
         } = data
+
+        if (data.message === 'error') {
+          throw new Error(data.message)
+        }
 
         // 賦值
         this.id = id
@@ -213,6 +216,8 @@ export default {
         this.isSelf = isSelf
       } catch (error) {
         console.log(error)
+        this.$bus.$emit('toast', { icon: 'error', title: `${error}` })
+        this.isLoading = false
       }
     },
 
