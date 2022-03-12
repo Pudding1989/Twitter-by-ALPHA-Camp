@@ -266,10 +266,18 @@ export default {
       })
   },
   watch: {
-    '$route.path'() {
-      this.fetchAccount()
-    },
-    currentUser() {
+    '$route.path'(toPath, fromPath) {
+      const formRoute = fromPath.split('/')
+      const toRoute = toPath.split('/')
+
+      if (!this.$route.params.id && formRoute[1] === toRoute[1]) {
+        return
+      }
+
+      if (this.$route.params.id === formRoute[2]) {
+        return
+      }
+
       this.fetchAccount()
     }
   }
