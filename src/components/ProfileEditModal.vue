@@ -1,7 +1,14 @@
 <template>
-  <!-- Modal background-->
-  <transition name="fade" mode="in-out">
-    <div v-show="modal" @click.stop.prevent="modal = false" class="modal">
+  <transition name="delay">
+    <div v-show="modal" class="modal">
+      <!-- Modal background-->
+      <transition name="fade">
+        <div
+          v-show="modal"
+          @click.stop.prevent="modal = false"
+          class="modal-background"
+        ></div>
+      </transition>
       <!-- Modal dialog -->
       <transition name="slide">
         <form
@@ -16,6 +23,7 @@
             <div class="d-flex align-items-center">
               <button
                 @click.stop.prevent="modal = false"
+                type="button"
                 class="close d-flex justify-content-center align-items-center"
               >
                 <!-- SVG -->
@@ -394,11 +402,14 @@ export default {
 
 .modal {
   --modal-dialog-height: 680px;
-  background: radial-gradient(
-    circle at 50% calc(#{$modal-height} + (var(--modal-dialog-height) / 2)),
-    var(--modal-background-center),
-    var(--modal-background-around)
-  );
+
+  .modal-background {
+    background: radial-gradient(
+      circle at 50% calc(#{$modal-height} + (var(--modal-dialog-height) / 2)),
+      var(--modal-background-center),
+      var(--modal-background-around)
+    );
+  }
 }
 
 .modal-dialog {

@@ -1,7 +1,14 @@
 <template>
-  <!-- Modal background-->
-  <transition name="fade" mode="in-out">
-    <div v-show="modal" @click.stop="modal = false" class="modal">
+  <transition name="delay">
+    <div v-show="modal" class="modal">
+      <!-- Modal background-->
+      <transition name="fade">
+        <div
+          v-show="modal"
+          @click.stop.prevent="modal = false"
+          class="modal-background"
+        ></div>
+      </transition>
       <!-- Modal dialog -->
       <transition name="slide">
         <form
@@ -13,6 +20,7 @@
           <div class="modal-header">
             <button
               @click.stop="modal = false"
+              type="button"
               class="close d-flex justify-content-center align-items-center"
             >
               <!-- SVG -->
@@ -68,10 +76,10 @@
 <script>
 import tweetAPI from '../apis/tweet'
 import { mapState } from 'vuex'
-import { nullAvatarFilter } from "../utils/mixins";
+import { nullAvatarFilter } from '../utils/mixins'
 
 export default {
-  mixins:[nullAvatarFilter],
+  mixins: [nullAvatarFilter],
   data() {
     return {
       modal: false,
@@ -152,11 +160,14 @@ export default {
 
 .modal {
   --modal-dialog-height: 450px;
-  background: radial-gradient(
-    circle at 50% calc(#{$modal-height} + (var(--modal-dialog-height) / 2)),
-    var(--modal-background-center),
-    var(--modal-background-around)
-  );
+
+  .modal-background {
+    background: radial-gradient(
+      circle at 50% calc(#{$modal-height} + (var(--modal-dialog-height) / 2)),
+      var(--modal-background-center),
+      var(--modal-background-around)
+    );
+  }
 }
 
 .modal-dialog {

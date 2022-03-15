@@ -7,32 +7,50 @@
   width: 100vw;
   height: 100vh;
 
-  overflow-x: hidden;
-  overflow-y: auto;
-
   padding: 0 10%;
-  // for 不支援漸變屬性瀏覽器
-  background-color: rgba(229, 229, 229, 0.9);
-  background-color: var(--modal-background-around);
 
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  //  延遲關閉modal，顯示 modal background 過場動畫
+  //  最少要跟整個元件的最後一個 leave-active 動畫同時
+  --modal-leave-delay: 0.35s;
 
-  // vue transition
-  // for modal dialog
-  .slide-enter,
-  .slide-leave-to {
-    transform: translate(0, calc(-#{$modal-height} - 100%));
+  &.delay-leave-active {
+    transition: none var(--modal-leave-delay);
   }
 
-  .slide-enter-to,
-  .slide-leave {
-    transform: none;
-  }
+  .modal-background {
+    position: absolute;
+    top: 0%;
+    left: 0%;
+    width: 100vw;
+    height: 100%;
 
-  .slide-enter-active,
-  .slide-leave-active {
-    transition: transform 0.5s cubic-bezier(0.8, 0, 0.15, 1.4);
+    // for 不支援漸變屬性瀏覽器
+    background-color: var(--modal-background-around);
+
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+
+    // for modal background
+    &.fade-enter,
+    &.fade-leave-to {
+      opacity: 0;
+      backdrop-filter: blur(0px);
+    }
+
+    &.fade-enter-to,
+    &.fade-leave {
+      opacity: 1;
+      backdrop-filter: blur(3px);
+    }
+
+    &.fade-enter-active {
+      transition: opacity 1.6s ease-in-out, backdrop-filter 1.6s ease-in-out;
+    }
+
+    &.fade-leave-active {
+      transition: opacity var(--modal-leave-delay) ease-in-out,
+        backdrop-filter var(--modal-leave-delay) ease-in-out;
+    }
   }
 }
 
@@ -52,7 +70,23 @@
   box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
     rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
 
-  backdrop-filter: blur(8px);
+  // vue transition
+  // for modal dialog
+  &.slide-enter,
+  &.slide-leave-to {
+    transform: translateY(calc(-#{$modal-height} - 100%));
+  }
+
+  &.slide-enter-to,
+  &.slide-leave {
+    transform: none;
+  }
+
+  &.slide-enter-active,
+  &.slide-leave-active {
+    // dialog 離開動畫要大於 modal-leave-delay，避免出現一幀破圖
+    transition: transform 0.5s cubic-bezier(0.8, 0, 0.15, 1.4);
+  }
 
   .modal-header {
     padding: 15px;
@@ -92,23 +126,4 @@
       color: var(--main-text);
     }
   }
-}
-
-// for modal background
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.fade-enter-to,
-.fade-leave {
-  opacity: 100%;
-}
-
-.fade-enter-active {
-  transition: opacity 1.6s ease-in-out;
-}
-
-.fade-leave-active {
-  transition: opacity 0.35s ease-in-out;
 }
