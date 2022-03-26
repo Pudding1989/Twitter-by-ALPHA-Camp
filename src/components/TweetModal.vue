@@ -216,11 +216,10 @@ export default {
   flex-grow: 1;
   padding: 15px;
   .avatar {
-    img {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-    }
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
   }
 
   textarea {

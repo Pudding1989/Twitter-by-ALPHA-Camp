@@ -337,7 +337,9 @@ export default {
   }
 
   .avatar {
-    img {
+    & > * {
+      display: block;
+      overflow: hidden;
       width: var(--avatar-width);
       height: var(--avatar-width);
       border-radius: 50%;

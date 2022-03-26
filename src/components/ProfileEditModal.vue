@@ -570,8 +570,6 @@ export default {
   }
 
   img {
-    width: var(--avatar-width);
-    height: var(--avatar-width);
     border-radius: 50%;
 
     object-fit: cover;
