@@ -44,44 +44,95 @@
             <!-- tweet -->
             <div class="tweet d-flex">
               <div class="avatar">
-                <router-link to="/">
-                  <img :src="avatar | nullAvatar" alt="預設的頭像" />
-                </router-link>
+                <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
+                  <template #skeletonLength></template>
+                  <template #originalNode>
+                    <router-link :to="`/users/${id}`"
+                      ><img :src="avatar | nullAvatar" alt="預設的頭像" />
+                    </router-link>
+                  </template>
+                </SkeletonScreen>
               </div>
 
               <div class="tweet-body">
                 <div class="d-flex">
                   <h3 class="name">
-                    <router-link :to="`users/${id}`">{{ name }}</router-link>
+                    <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
+                      <template #skeletonLength
+                        >&emsp;&emsp;&emsp;&emsp;&emsp;</template
+                      >
+                      <template #originalNode
+                        ><router-link :to="`users/${id}`">{{
+                          name
+                        }}</router-link>
+                      </template>
+                    </SkeletonScreen>
                   </h3>
                   <span class="info">
-                    <router-link :to="`users/${id}`">@{{ account }}</router-link
-                    >．
-                    <router-link :to="`users/${id}`">{{
-                      createdAt | fromNow
-                    }}</router-link>
+                    <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
+                      <template #skeletonLength>&emsp;&emsp;&emsp;</template>
+                      <template #originalNode>
+                        <router-link :to="`users/${id}`"
+                          >@{{ account }}</router-link
+                        >
+                      </template> </SkeletonScreen
+                    >．<SkeletonScreen
+                      :isLoading="isLoading"
+                      :skeleton="'span'"
+                    >
+                      <template #skeletonLength>&emsp;&emsp;</template>
+                      <template #originalNode>
+                        <router-link v-if="!isLoading" :to="`users/${id}`">{{
+                          createdAt | fromNow
+                        }}</router-link>
+                      </template>
+                    </SkeletonScreen>
                   </span>
                 </div>
 
                 <div class="tweet-content">
-                  {{ description }}
+                  <SkeletonScreen :isLoading="isLoading" :skeleton="'div'">
+                    <template #skeletonLength>&emsp;<br />&emsp; </template>
+                    <template #originalNode>
+                      <span>{{ description }}</span>
+                    </template>
+                  </SkeletonScreen>
                 </div>
+
                 <span class="reply-to"
-                  >回覆給&thinsp;<router-link :to="`users/${id}`"
-                    >@{{ account }}</router-link
-                  ></span
-                >
+                  >回覆給&thinsp;<SkeletonScreen
+                    :isLoading="isLoading"
+                    :skeleton="'span'"
+                  >
+                    <template #skeletonLength>&emsp;&emsp;&emsp; </template>
+                    <template #originalNode>
+                      <router-link :to="`users/${id}`"
+                        >@{{ account }}</router-link
+                      >
+                    </template>
+                  </SkeletonScreen>
+                  <!-- <transition name="skeleton" mode="out-in">
+                    <span v-if="isLoading" class="loading-mask">
+                      &emsp;&emsp;&emsp;
+                    </span>
+                    <router-link v-if="!isLoading" :to="`users/${id}`"
+                      >@{{ account }}</router-link
+                    ></transition
+                  > -->
+                </span>
               </div>
             </div>
             <!-- reply -->
             <div class="reply d-flex">
               <div class="avatar">
-                <router-link to="/">
-                  <img
-                    :src="currentUser.avatar | nullAvatar"
-                    alt="預設的頭像"
-                  />
-                </router-link>
+                <transition name="skeleton" mode="out-in">
+                  <router-link to="/profile">
+                    <img
+                      :src="currentUser.avatar | nullAvatar"
+                      alt="預設的頭像"
+                    />
+                  </router-link>
+                </transition>
               </div>
 
               <textarea
@@ -93,7 +144,7 @@
               ></textarea>
             </div>
           </div>
-
+          <!-- modal-footer -->
           <div
             class="modal-footer d-flex justify-content-end align-items-center"
           >
@@ -116,12 +167,15 @@ import { fromNowFilter, nullAvatarFilter } from '../utils/mixins'
 import tweetAPI from '../apis/tweet'
 import replyAPI from '../apis/reply'
 import { mapState } from 'vuex'
+import SkeletonScreen from '../components/slot/SkeletonScreen'
 
 export default {
+  components: { SkeletonScreen },
   mixins: [fromNowFilter, nullAvatarFilter],
   data() {
     return {
       modal: false,
+      isLoading: true,
       tweetId: -1,
       // 樓主
       id: -1,
@@ -152,6 +206,7 @@ export default {
 
   methods: {
     async fetchTweet(tweetId) {
+      this.isLoading = true
       try {
         const { data } = await tweetAPI.fetchTweet({ tweetId })
         this.id = data.userId
@@ -160,12 +215,15 @@ export default {
         this.account = data.User.account
         this.createdAt = data.createdAt
         this.description = data.description
+
+        this.isLoading = false
       } catch (error) {
         console.log(error)
         this.$bus.$emit('toast', {
           icon: 'error',
           title: `${error}`
         })
+        this.isLoading = false
       }
     },
 
