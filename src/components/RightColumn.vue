@@ -1,19 +1,15 @@
-Skip to content Search or jump to… Pull requests Issues Marketplace Explore
-@Pudding1989 jj280385 / Twitter-by-ALPHA-Camp Public Code Issues Pull requests
-Actions Projects Wiki Security Insights
-Twitter-by-ALPHA-Camp/src/components/RightColumn.vue @ReoNaBear ReoNaBear 4
-pages of follow/unfollow function Latest commit d40a415 5 hours ago History 2
-contributors @jj280385@ReoNaBear 240 lines (224 sloc) 5.18 KB
-
 <template>
   <div class="column-container">
     <div class="column-header">
       <span class="column-title"> Popular </span>
     </div>
     <div class="column-list">
-      <div class="items-container">
-        <!-- TODO: 待和後端串接data後使用v-for將list-item迭代 -->
-        <div class="list-item" v-for="user in users" :key="user.id">
+      <transition-group name="sort" tag="div" class="items-container">
+        <div
+          class="list-item d-flex justify-content-between align-items-center"
+          v-for="(user, index) in users"
+          :key="user.id"
+        >
           <div class="user-info">
             <div class="user-avatar">
               <router-link :to="{ path: `/users/${user.id}` }">
@@ -26,26 +22,24 @@ contributors @jj280385@ReoNaBear 240 lines (224 sloc) 5.18 KB
             </router-link>
           </div>
 
-          <template v-if="!user.isSelf">
-            <div class="toggleBtn" v-if="user.isFollowed">
-              <button
-                class="following-btn"
-                @click.stop.prevent="deleteFollow(user.id)"
-              >
-                正在追隨
-              </button>
-            </div>
-            <div class="toggleBtn" v-else>
-              <button
-                class="unfollowed-btn"
-                @click.stop.prevent="addFollow(user.id)"
-              >
-                追隨
-              </button>
-            </div>
-          </template>
+          <!-- follow button -->
+          <button
+            v-if="!user.isSelf"
+            @click="toggleFollow(user.id, index)"
+            class="follow"
+            :class="{ active: user.isFollowed }"
+            :disabled="user.isProcessing"
+          >
+            {{
+              user.isProcessing
+                ? '跟隨中..'
+                : user.isFollowed
+                ? '正在跟隨'
+                : '跟隨'
+            }}
+          </button>
         </div>
-      </div>
+      </transition-group>
     </div>
   </div>
 </template>
@@ -55,6 +49,7 @@ import userAPI from '../apis/user'
 import Toast from '../components/Toast.vue'
 import followAPI from '../apis/follow'
 import { mapState } from 'vuex'
+import user from '../apis/user'
 
 export default {
   components: {
@@ -62,9 +57,7 @@ export default {
   },
   data() {
     return {
-      users: [],
-      topUsers: [],
-      isFollowed: false
+      users: []
     }
   },
 
@@ -75,62 +68,69 @@ export default {
   created() {
     this.fetchUser()
   },
-  watch: {
-    topUsers: function (newValue) {
-      this.users = [...newValue]
-    }
+
+  mounted() {
+    this.$bus.$on('toggleFollow', () => {
+      this.fetchUser()
+    })
   },
+
   methods: {
     async fetchUser() {
       try {
         const { data } = await userAPI.getUsersTop()
-        this.topUsers = data
         this.users = data
-        this.isFollowed = data.isFollowed
+        // this.isFollowed = data.isFollowed
 
         // 過濾本人
-        this.topUsers = this.topUsers.map((user) => {
+        this.users = this.users.map((user) => {
           if (user.id === this.currentUser.id) {
             return {
               ...user,
               isSelf: true
             }
           } else {
-            return user
-          }
-        })
-      } catch (error) {
-        console.log('error')
-      }
-    },
-    async addFollow(id) {
-      try {
-        const { data } = await followAPI.addFollow(id)
-        this.isFollowed = true
-        this.$bus.$emit('toast', { icon: 'success', title: '追隨成功' })
-        this.topUsers.filter((topUser, key) => {
-          if (topUser.id === id) {
-            topUser.isFollowed = true
-            this.users[key].isFollowed = true
+            return { ...user, isProcessing: false }
           }
         })
       } catch (error) {
         console.log(error)
       }
     },
-    async deleteFollow(id) {
+
+    async toggleFollow(userId, userIndex) {
+      this.users[userIndex].isProcessing = true
       try {
-        const { data } = await followAPI.deleteFollow(id)
-        this.isFollowed = false
-        this.$bus.$emit('toast', { icon: 'success', title: '取消追隨成功' })
-        this.topUsers.filter((topUser, key) => {
-          if (topUser.id === id) {
-            topUser.isFollowed = false
-            this.users[key].isFollowed = false
+        if (!this.users[userIndex].isFollowed) {
+          const { data } = await followAPI.addFollow(userId)
+
+          if (data.status === 'success') {
+            this.users[userIndex].isFollowed = true
+            this.users[userIndex].isProcessing = false
+            this.$bus.$emit('toast', { icon: 'success', title: '追隨成功' })
+
+            this.fetchUser()
           }
+        } else {
+          const { data } = await followAPI.deleteFollow(userId)
+
+          if (data.status === 'success') {
+            this.users[userIndex].isFollowed = false
+            this.users[userIndex].isProcessing = false
+            this.$bus.$emit('toast', { icon: 'success', title: '取消追隨成功' })
+
+            this.fetchUser()
+          }
+        }
+        // 傳送給 Profile Area
+        this.$bus.$emit('toggleFollow', {
+          id: userId,
+          isFollowed: this.users[userIndex].isFollowed
         })
       } catch (error) {
         console.log(error)
+        this.isProcessing = false
+        this.$bus.$emit('toast', { icon: 'error', title: `${error}` })
       }
     }
   }
@@ -138,37 +138,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.following-btn {
-  position: absolute;
-  right: 15px;
-  top: 10px;
-  @include size(90px, 25px);
-  color: var(--just-white);
-  background-color: var(--theme-color);
-  border-radius: 100px;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 15px;
-  &:hover {
-    background-color: var(--hover-color);
-  }
-}
-.unfollowed-btn {
-  position: absolute;
-  right: 15px;
-  top: 10px;
-  @include size(60px, 25px);
-  color: var(--theme-color);
-  border: 1px solid var(--theme-color);
-  border-radius: 100px;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 15px;
-  &:hover {
-    color: var(--just-white);
-    background-color: var(--hover-color);
-  }
-}
 .column-container {
   @include size(350px, 756px);
   margin-top: 15px;
@@ -191,6 +160,16 @@ export default {
   display: flex;
   align-items: center;
   border-top: 1px solid var(--theme-line);
+
+  &.sort-move {
+    z-index: 1;
+    background-color: var(--just-white);
+    opacity: 0.45;
+    transition: all 0.75s cubic-bezier(0.8, -0.6, 0.1, 1.4) 1.5s;
+
+    // css scan shadow #1
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+  }
 }
 .user-info {
   display: flex;
@@ -223,35 +202,48 @@ export default {
     text-decoration: underline;
   }
 }
-.following-btn {
-  position: absolute;
-  right: 15px;
-  @include size(90px, 35px);
-  color: var(--just-white);
-  background-color: var(--theme-color);
+
+button.follow {
   border-radius: 100px;
   font-size: 15px;
-  font-weight: 700;
   line-height: 15px;
-  &:hover {
-    background-color: var(--hover-color);
-  }
-}
-.unfollowed-btn {
-  position: absolute;
-  right: 15px;
-  @include size(60px, 35px);
+  font-weight: 700;
+
+  --btn-x-padding: 15px;
+  --btn-border-width: 1px;
+  padding: 10px 0px;
+
+  transition: width 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.285),
+    color 0.35s ease-in, background-color 0.35s ease-in,
+    border-color 0.35s ease-out;
+
+  width: calc(2em + var(--btn-x-padding) * 2 + var(--btn-border-width) * 2);
+
   color: var(--theme-color);
   border: 1px solid var(--theme-color);
-  border-radius: 100px;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 15px;
+
+  //處理中狀態
+  &:disabled {
+    width: calc(
+      3.25em + var(--btn-x-padding) * 2 + var(--btn-border-width) * 2
+    );
+
+    border-color: var(--focus-color);
+    color: var(--just-white);
+    background-color: var(--focus-color);
+  }
+
+  // 正在追蹤狀態
+  &.active {
+    width: calc(4em + var(--btn-x-padding) * 2 + var(--btn-border-width) * 2);
+
+    color: var(--just-white);
+    background-color: var(--theme-color);
+  }
+
   &:hover {
     color: var(--just-white);
     background-color: var(--hover-color);
   }
 }
 </style>
-© 2022 GitHub, Inc. Terms Privacy Security Status Docs Contact GitHub Pricing
-API Training Blog About

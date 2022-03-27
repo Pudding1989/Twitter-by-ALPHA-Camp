@@ -104,8 +104,9 @@
               @click="toggleFollow"
               class="follow"
               :class="{ active: isFollowed }"
+              :disabled="isProcessing"
             >
-              {{ isFollowed ? '正在跟隨' : '跟隨' }}
+              {{ isProcessing ? '跟隨中..' : isFollowed ? '正在跟隨' : '跟隨' }}
             </button>
           </template>
 
@@ -161,7 +162,8 @@ export default {
       isNotify: true,
       isFollowed: '',
       isSelf: true,
-      isLoading: true
+      isLoading: true,
+      isProcessing: false
     }
   },
 
@@ -177,7 +179,6 @@ export default {
         // 預設當前使用者
         let id = -1
         if (!this.$route.params.id) {
-
           id = this.currentUser.id
         } else {
           // 從路由讀取params.id覆蓋
@@ -226,6 +227,7 @@ export default {
     },
 
     async toggleFollow() {
+      this.isProcessing = true
       try {
         if (!this.isFollowed) {
           // 加入跟隨
@@ -234,6 +236,7 @@ export default {
           if (data.status === 'success') {
             this.isFollowed = true
             this.followerCount++
+            this.isProcessing = false
             this.$bus.$emit('toast', { icon: 'success', title: '追隨成功' })
           }
         } else {
@@ -241,11 +244,20 @@ export default {
           if (data.status === 'success') {
             this.isFollowed = false
             this.followerCount--
+            this.isProcessing = false
             this.$bus.$emit('toast', { icon: 'success', title: '取消追隨成功' })
           }
         }
+
+        // 傳送給 top user
+        this.$bus.$emit('toggleFollow', {
+          id: this.id,
+          isFollowed: this.isFollowed
+        })
       } catch (error) {
         console.log(error)
+        this.isProcessing = false
+        this.$bus.$emit('toast', { icon: 'error', title: `${error}` })
       }
     },
 
@@ -274,6 +286,15 @@ export default {
       this.fetchAccount()
     })
   },
+
+  mounted() {
+    this.$bus.$on('toggleFollow', ({ id, isFollowed }) => {
+      if (Number(this.id) === id) {
+        this.isFollowed = isFollowed
+      }
+    })
+  },
+
   watch: {
     '$route.path'(toPath, fromPath) {
       const formRoute = fromPath.split('/')
@@ -419,8 +440,7 @@ export default {
 
   button.message {
     &.active,
-    &:hover,
-    &:focus {
+    &:hover {
       path {
         fill: var(--just-white);
       }
@@ -438,17 +458,10 @@ export default {
         stroke: var(--hover-color);
       }
     }
-    &:focus {
-      circle {
-        fill: var(--focus-color);
-        stroke: var(--focus-color);
-      }
-    }
   }
 
   button.notify {
-    &:hover,
-    &:focus {
+    &:hover {
       path {
         fill: var(--just-white);
       }
@@ -460,29 +473,25 @@ export default {
         stroke: var(--hover-color);
       }
     }
-    &:focus {
-      circle {
-        fill: var(--focus-color);
-        stroke: var(--focus-color);
-      }
-    }
   }
 
   // 編輯個人資料
   button.edit,
   button.follow {
     padding: 10px 15px;
+
     border-radius: 100px;
 
     font-size: 15px;
     line-height: 15px;
     font-weight: 700;
+
     color: var(--theme-color);
     border: 1px solid var(--theme-color);
 
     &.active,
     &:hover,
-    &:focus {
+    &:disabled {
       color: var(--just-white);
     }
     &.active {
@@ -494,8 +503,30 @@ export default {
       background-color: var(--hover-color);
       border-color: var(--hover-color);
     }
+  }
 
-    &:focus {
+  button.follow {
+    --btn-x-padding: 15px;
+    --btn-border-width: 1px;
+
+    padding: 10px 0px;
+
+    transition: width 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.285),
+      color 0.35s ease-in, background-color 0.35s ease-in,
+      border-color 0.35s ease-out;
+
+    width: calc(2em + var(--btn-x-padding) * 2 + var(--btn-border-width) * 2);
+
+    &.active {
+      width: calc(4em + var(--btn-x-padding) * 2 + var(--btn-border-width) * 2);
+    }
+
+    &:disabled {
+      width: calc(
+        3.25em + var(--btn-x-padding) * 2 + var(--btn-border-width) * 2
+      );
+
+      color: var(--just-white);
       background-color: var(--focus-color);
       border-color: var(--focus-color);
     }
