@@ -408,6 +408,23 @@ export default {
     color: var(--invalid);
     font-size: 15px;
     line-height: 15px;
+
+    // Vue transition
+&.hint-enter-active,
+&.hint-leave-active,
+&.hint-move {
+  transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+}
+
+&.hint-enter {
+  opacity: 0.1;
+  transform: translateY(-50%);
+}
+
+&.hint-leave-to {
+  opacity: 0.1;
+  transform: translateY(50%);
+}
   }
 
   button {
@@ -425,23 +442,6 @@ export default {
       color: var(--theme-white);
     }
   }
-}
-
-// Vue transition
-.hint-enter-active,
-.hint-leave-active,
-.hint-move {
-  transition: opacity 0.35s ease-out, transform 0.35s ease-out;
-}
-
-.hint-enter {
-  opacity: 10%;
-  transform: translateY(-50%);
-}
-
-.hint-leave-to {
-  opacity: 10%;
-  transform: translateY(50%);
 }
 
 @media screen and (min-width: $breakpoint) {

@@ -587,12 +587,12 @@ export default {
   }
 
   .hint-enter {
-    opacity: 20%;
+    opacity: 0.2;
     transform: translateX(-5%);
   }
 
   .hint-leave-to {
-    opacity: 10%;
+    opacity: 0.1;
     transform: translateX(-2%);
   }
 }

@@ -272,7 +272,7 @@ export default {
 
   .hint-enter,
   .hint-leave-to {
-    opacity: 0%;
+    opacity: 0;
     transform: translateY(-75%);
   }
 
@@ -448,7 +448,7 @@ form {
         left: 40%;
         transform: translate(-50%, -50%);
         background-color: var(--theme-line);
-        opacity: 80%;
+        opacity: 0.8;
         width: 150%;
         height: 150%;
         border-radius: 50%;

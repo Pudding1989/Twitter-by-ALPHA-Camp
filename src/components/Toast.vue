@@ -111,12 +111,12 @@ export default {
 }
 
 .toast-enter {
-  opacity: 0%;
+  opacity: 0;
   transform: translateY(-25%);
 }
 
 .toast-leave-to {
-  opacity: 0%;
+  opacity: 0;
   transform: translateY(40%);
 }
 </style>

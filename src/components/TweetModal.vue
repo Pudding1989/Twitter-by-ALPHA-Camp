@@ -268,12 +268,12 @@ export default {
   }
 
   .hint-enter {
-    opacity: 10%;
+    opacity: 0.1;
     transform: translateY(-50%);
   }
 
   .hint-leave-to {
-    opacity: 10%;
+    opacity: 0.1;
     transform: translateY(50%);
   }
 }
