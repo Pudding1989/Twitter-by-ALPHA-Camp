@@ -4,7 +4,7 @@
       <!-- Modal background-->
       <transition name="fade">
         <div
-          v-show="modal"
+          v-if="modal"
           @click.stop.prevent="modal = false"
           class="modal-background"
         ></div>
@@ -12,7 +12,7 @@
       <!-- Modal dialog -->
       <transition name="slide">
         <div
-          v-show="modal"
+          v-if="modal"
           @click.stop.prevent="modal = true"
           class="modal-dialog d-flex flex-column"
         >
