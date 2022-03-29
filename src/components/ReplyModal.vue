@@ -149,7 +149,9 @@
             class="modal-footer d-flex justify-content-end align-items-center"
           >
             <transition name="hint">
-              <span v-if="replyHint" class="hint">字數不可超過140字</span>
+              <span v-if="replyHint" class="hint">{{
+                replyHint === 'empty' ? '內容不可空白' : '字數不可超過 140 字'
+              }}</span>
               ></transition
             >
             <button @click="submitReply" :disabled="isProcessing" type="button">
@@ -204,6 +206,14 @@ export default {
     }
   },
 
+  watch: {
+    reply(nowState) {
+      nowState.length >= 140
+        ? (this.replyHint = true)
+        : (this.replyHint = false)
+    }
+  },
+
   methods: {
     async fetchTweet(tweetId) {
       this.isLoading = true
@@ -229,8 +239,8 @@ export default {
 
     async submitReply() {
       try {
-        if (!this.reply) {
-          this.replyHint = true
+        if (!this.reply || !this.reply.trim().length) {
+          this.replyHint = 'empty'
           this.$bus.$emit('toast', { icon: 'error', title: '內容不可空白' })
           return
         }
@@ -410,21 +420,21 @@ export default {
     line-height: 15px;
 
     // Vue transition
-&.hint-enter-active,
-&.hint-leave-active,
-&.hint-move {
-  transition: opacity 0.35s ease-out, transform 0.35s ease-out;
-}
+    &.hint-enter-active,
+    &.hint-leave-active,
+    &.hint-move {
+      transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+    }
 
-&.hint-enter {
-  opacity: 0.1;
-  transform: translateY(-50%);
-}
+    &.hint-enter {
+      opacity: 0.1;
+      transform: translateY(-50%);
+    }
 
-&.hint-leave-to {
-  opacity: 0.1;
-  transform: translateY(50%);
-}
+    &.hint-leave-to {
+      opacity: 0.1;
+      transform: translateY(50%);
+    }
   }
 
   button {

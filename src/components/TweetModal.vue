@@ -94,23 +94,24 @@ export default {
   },
 
   watch: {
-    tweet() {
-      if (this.tweet.length >= 140) {
-        this.tweetHint = true
-      } else this.tweetHint = false
+    tweet(nowState) {
+      nowState.length >= 140
+        ? (this.tweetHint = true)
+        : (this.tweetHint = false)
     }
   },
+
   methods: {
     async submitTweet() {
       try {
-        if (!this.tweet) {
+        if (!this.tweet || !this.tweet.trim().length) {
           this.tweetHint = 'empty'
           this.$bus.$emit('toast', { icon: 'error', title: '內容不可空白' })
           return
         }
 
         if (this.tweet.length >= 140) {
-          this.tweetHint = 'empty'
+          this.tweetHint = true
           this.$bus.$emit('toast', {
             icon: 'error',
             title: '字數不可超過 140 字'
@@ -148,11 +149,11 @@ export default {
     this.$bus.$on('tweetModal', (modal) => {
       this.modal = modal
     })
-  },
-
-  beforeDestroy() {
-    // this.$bus.$off('tweetModal')
   }
+
+  // beforeDestroy() {
+  // this.$bus.$off('tweetModal')
+  // }
 }
 </script>
 <style lang="scss" scoped>
