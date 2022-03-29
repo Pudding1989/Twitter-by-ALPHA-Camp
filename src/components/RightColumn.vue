@@ -7,7 +7,7 @@
       <transition-group name="sort" tag="div" class="items-container">
         <div
           class="list-item d-flex justify-content-between align-items-center"
-          v-for="(user, index) in users"
+          v-for="user in users"
           :key="user.id"
         >
           <div class="user-info">
@@ -25,7 +25,7 @@
           <!-- follow button -->
           <button
             v-if="!user.isSelf"
-            @click="toggleFollow(user.id, index)"
+            @click="toggleFollow(user)"
             class="follow"
             :class="{ active: user.isFollowed }"
             :disabled="user.isProcessing"
@@ -80,7 +80,6 @@ export default {
       try {
         const { data } = await userAPI.getUsersTop()
         this.users = data
-        // this.isFollowed = data.isFollowed
 
         // 過濾本人
         this.users = this.users.map((user) => {
@@ -98,34 +97,36 @@ export default {
       }
     },
 
-    async toggleFollow(userId, userIndex) {
-      this.users[userIndex].isProcessing = true
+    async toggleFollow(user) {
+      user.isProcessing = true
+
       try {
-        if (!this.users[userIndex].isFollowed) {
-          const { data } = await followAPI.addFollow(userId)
+        if (!user.isFollowed) {
+          const { data } = await followAPI.addFollow(user.id)
 
           if (data.status === 'success') {
-            this.users[userIndex].isFollowed = true
-            this.users[userIndex].isProcessing = false
+            user.isFollowed = true
+            user.isProcessing = false
             this.$bus.$emit('toast', { icon: 'success', title: '追隨成功' })
 
             this.fetchUser()
           }
         } else {
-          const { data } = await followAPI.deleteFollow(userId)
+          const { data } = await followAPI.deleteFollow(user.id)
 
           if (data.status === 'success') {
-            this.users[userIndex].isFollowed = false
-            this.users[userIndex].isProcessing = false
+            user.isFollowed = false
+            user.isProcessing = false
             this.$bus.$emit('toast', { icon: 'success', title: '取消追隨成功' })
 
             this.fetchUser()
           }
         }
+
         // 傳送給 Profile Area
         this.$bus.$emit('toggleFollow', {
-          id: userId,
-          isFollowed: this.users[userIndex].isFollowed
+          id: user.id,
+          isFollowed: user.isFollowed
         })
       } catch (error) {
         console.log(error)
