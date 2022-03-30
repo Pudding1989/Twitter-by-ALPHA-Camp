@@ -1,22 +1,89 @@
 <template>
-  <div class="main-container">
-    <!-- title -->
+  <div class="tweet-list" :class="{ loading: isLoading }">
+    <!-- tweet skeleton -->
+    <template v-if="isLoading">
+      <div class="tweet-item" v-for="skeleton in 6" :key="skeleton">
+        <div class="user-avatar">
+          <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
+            <template #skeletonLength></template>
+          </SkeletonScreen>
+        </div>
+
+        <div class="post-content d-flex flex-column">
+          <div class="user-info">
+            <div class="user-name">
+              <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
+                <template #skeletonLength
+                  >&emsp;&emsp;&emsp;&emsp;&emsp;</template
+                >
+              </SkeletonScreen>
+            </div>
+            <div class="user-accountName">
+              <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
+                <template #skeletonLength>&emsp;&emsp;&emsp;</template>
+              </SkeletonScreen>
+            </div>
+
+            <div class="post-time">
+              ‧<SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
+                <template #skeletonLength>&emsp;&emsp;</template>
+              </SkeletonScreen>
+            </div>
+          </div>
+          <!-- 點擊貼文內容會跳轉頁面到推文頁面 -->
+          <span to="" class="tweet-content">
+            <span class="tweet-content">
+              <SkeletonScreen :isLoading="isLoading" :skeleton="'div'">
+                <template #skeletonLength>&emsp;<br />&emsp;</template>
+              </SkeletonScreen>
+            </span>
+          </span>
+
+          <div class="icon-item">
+            <button class="reply d-flex">
+              <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
+                <template #skeletonLength>&emsp;&emsp;</template>
+              </SkeletonScreen>
+
+              <span class="replay-count"
+                ><SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
+                  <template #skeletonLength>&emsp;</template>
+                </SkeletonScreen></span
+              >
+            </button>
+
+            <!-- 點擊喜歡icon不會跳轉頁面 -->
+            <div class="like-item">
+              <button class="like d-flex">
+                <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
+                  <template #skeletonLength>&emsp;&emsp;</template>
+                </SkeletonScreen>
+
+                <span class="like-count">
+                  <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
+                    <template #skeletonLength>&emsp;</template>
+                  </SkeletonScreen>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
 
     <!-- 下方推文列表 -->
-    <div class="tweet-list" v-for="tweet in tweets" :key="tweet.id">
-      <div class="tweet-item">
+    <transition-group v-show="!isLoading" name="tweet">
+      <div class="tweet-item" v-for="tweet in tweets" :key="tweet.id">
         <!-- 點擊照片會跳轉頁面到其他使用者個人資料 -->
         <div class="user-avatar">
-
-          <router-link :to="{path: `/users/${tweet.userId}`}">
-            <img class="avatar-img" :src="tweet.User.avatar" alt="/" />
+          <router-link :to="{ path: `/users/${tweet.userId}` }">
+            <img :src="tweet.User.avatar | nullAvatar" alt="/" />
           </router-link>
         </div>
 
         <!-- 點擊名稱和帳號會跳轉頁面到其他使用者個人資料 -->
-        <div class="post-content">
-
-          <router-link :to="{path: `/users/${tweet.userId}`}">
+        <div class="post-content d-flex flex-column">
+          <router-link :to="{ path: `/users/${tweet.userId}` }">
             <div class="user-info">
               <div class="user-name">{{ tweet.User.name }}</div>
               <div class="user-accountName">{{ tweet.User.account }}</div>
@@ -118,18 +185,24 @@
           </div>
         </div>
       </div>
-    </div>
+    </transition-group>
+
+    <Spinner v-if="isLoading" />
   </div>
 </template>
 
 <script>
 import tweetAPI from './../apis/mainTweet'
-import { fromNowFilter } from './../utils/mixins'
+import { fromNowFilter, nullAvatarFilter } from './../utils/mixins'
+import Spinner from '../components/Spinner.vue'
+import SkeletonScreen from '../components/slot/SkeletonScreen.vue'
 
 export default {
-  mixins: [fromNowFilter],
+  components: { Spinner, SkeletonScreen },
+  mixins: [fromNowFilter, nullAvatarFilter],
   data() {
     return {
+      isLoading: true,
       tweets: []
     }
   },
@@ -205,46 +278,62 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.main-container {
-  max-height: 80vh;
-  overflow: scroll;
-}
-
 .tweet-list {
-  position: relative;
-  @include size(100%, 100%);
-  display: flex;
-  flex-direction: column;
+  max-height: 80vh;
+  overflow-y: scroll;
+
+  &.loading {
+    padding: 10px 0;
+    position: relative;
+  }
 }
 
 .tweet-item {
-  @include size(100%, 100%);
   display: flex;
   font-size: 15px;
   font-weight: 700;
   line-height: 15px;
   border-bottom: 1px solid var(--theme-line);
-  padding: 15px;
+
+  padding: 10px 15px 14px;
+
+  // Vue transition
+  &.tweet-enter-active,
+  &.tweet-leave-active {
+    transform-origin: top center;
+    transition: opacity 0.65s ease-in-out,
+      transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.285);
+  }
+
+  &.tweet-enter {
+    opacity: 0;
+    transform: scaleY(0%);
+  }
+
+  &.tweet-leave-to {
+    opacity: 0;
+  }
 }
 
 .user-avatar {
-  @include size(50px, 50px);
-  margin: 0 10px auto 15px;
-}
+  flex-shrink: 0;
+  margin-right: 10px;
 
-.avatar-img {
-  background-color: var(--avatar-img-background);
+  @include size(50px, 50px);
   border-radius: 50%;
-  &:hover {
-    background-color: darkgray;
+  overflow: hidden;
+
+  & > * {
+    display: block;
+  }
+
+  img {
+    background-color: var(--avatar-img-background);
   }
 }
 
 .post-content {
-  @include size(510px, 100%);
-  display: flex;
-  flex-flow: row wrap;
-  margin-right: 15px;
+  flex-grow: 1;
 }
 
 .user-info {
@@ -254,50 +343,46 @@ export default {
 .user-name {
   color: var(--main-text);
   margin-right: 5px;
-  &:hover {
-    text-decoration: underline;
-  }
 }
 
 .user-accountName {
   color: var(--info);
   font-size: 15px;
   font-weight: 500;
-  &:hover {
-    text-decoration: underline;
-  }
 }
 
 .post-time {
   color: var(--info);
   font-size: 15px;
   font-weight: 500;
-  &:hover {
-    text-decoration: none;
-  }
 }
 
 .tweet-content {
-  @include size(100%, 100%);
+  margin: 6px 0 14px;
+
   font-size: 15px;
   font-weight: 500;
   line-height: 22px;
-  margin: 10px 0;
+
   word-break: break-all;
+
+  &:hover {
+    color: var(--placeholder);
+  }
 }
 
 .icon-item {
-  @include size(130px, 21px);
   display: flex;
-  justify-content: space-between;
   align-items: center;
 
   button {
-    justify-content: space-between;
     align-items: center;
 
-    span {
-      margin-left: 10px;
+    svg,
+    // for skeleton screen
+    span:first-child {
+      @include size(15px, 15px);
+      margin-right: 10px;
     }
 
     &:hover {
@@ -310,20 +395,11 @@ export default {
       }
     }
   }
-}
 
-.like-item {
-  display: flex;
-}
+  button.reply {
+    margin-right: 50px;
+  }
 
-.reply,
-.like {
-  display: flex;
-}
-.reply-icon,
-.like-icon {
-  @include size(15px, 15px);
-  margin-right: 10px;
   button.like {
     &:hover {
       span {

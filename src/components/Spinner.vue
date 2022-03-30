@@ -31,9 +31,9 @@ $overlay-color: transparent;
   margin: auto;
 }
 
-
 .spinner {
   // overlay
+  z-index: 1;
   background: $overlay-color;
   @include absolute-center;
 
