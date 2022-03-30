@@ -544,6 +544,9 @@ export default {
     color: black;
     font-size: 14px;
     line-height: 20px;
+
+    // display:flex時不適用、需固定寬度
+    overflow-wrap: break-word;
   }
 
   div:last-child {
