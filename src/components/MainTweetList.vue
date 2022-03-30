@@ -103,32 +103,29 @@ export default {
   },
 
   created() {
-    const { queryId } = this.$route.params
-    this.fetchTweets({ queryId })
+    this.fetchTweets()
   },
+
   methods: {
-    async fetchTweets(queryId) {
+    async fetchTweets() {
+      this.isLoading = true
       try {
-        const response = await tweetAPI.getTweets({
-          id: queryId
-        })
-        const tweets = response.data
-        this.tweets = tweets
-        // console.log(tweets)
-        // console.log('response',response.data)
-        // console.log('id',tweets[0].id)
-      } catch (e) {
-        console.log('error')
-      }
-    },
-    async addLikes(tweet) {
-      try {
-        const { data } = await tweetAPI.addLike(tweet.id)
-        // console.log('data',data)
-        tweet.isLiked = !tweet.isLiked
-        tweet.likeCount += 1
+        const { data } = await tweetAPI.getTweets()
+
+        if (data.status === 'error') {
+          throw new Error(data.message)
+        }
+
+        this.tweets = data.map((tweet) => ({
+          ...tweet,
+          isProcessing: false
+        }))
+
+        this.isLoading = false
       } catch (error) {
-        console.log('error')
+        this.isLoading = false
+        console.log(error)
+        this.$bus.$emit('toast', { icon: 'error', title: `${error}` })
       }
     },
     async deleteLikes(tweet) {
