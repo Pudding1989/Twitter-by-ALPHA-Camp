@@ -58,29 +58,61 @@
             <!-- 點擊喜歡icon不會跳轉頁面 -->
             <div class="like-item">
               <button
-                class="like"
-                v-if="!tweet.isLiked"
-                @click.stop.prevent="addLikes(tweet)"
+                class="like d-flex"
+                @click.stop.prevent="toggleLike(tweet)"
+                :disabled="tweet.isProcessing"
               >
-                <img
-                  class="like-icon"
-                  src="../assets/image/like-icon.svg"
-                  alt="/"
-                />
-                <span>{{ tweet.likeCount }}</span>
-              </button>
-              <button
-                v-else
-                class="like"
-                type="button"
-                @click.stop.prevent="deleteLikes(tweet)"
-              >
-                <img
-                  class="like-icon"
-                  src="../assets/image/liked-icon.svg"
-                  alt=""
-                />
-                <span>{{ tweet.likeCount }}</span>
+                <!-- like SVG -->
+                <svg
+                  v-show="!tweet.isLiked"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 15 15"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M7.5 13.5236H7.49125C5.87687 13.4936 1.21875 9.28489 1.21875 5.29864C1.21875 3.38364 2.79687 1.70239 4.59562 1.70239C6.02687 1.70239 6.98937 2.68989 7.49937 3.40864C8.00812 2.69114 8.97062 1.70239 10.4025 1.70239C12.2025 1.70239 13.78 3.38364 13.78 5.29927C13.78 9.28427 9.12125 13.493 7.50687 13.5224H7.5V13.5236ZM4.59625 2.64052C3.29625 2.64052 2.15687 3.88302 2.15687 5.29989C2.15687 8.88739 6.55312 12.5474 7.50062 12.5861C8.44937 12.5474 12.8444 8.88802 12.8444 5.29989C12.8444 3.88302 11.705 2.64052 10.405 2.64052C8.825 2.64052 7.9425 4.47552 7.935 4.49364C7.79125 4.84489 7.2125 4.84489 7.06812 4.49364C7.05937 4.47489 6.1775 2.64052 4.59687 2.64052H4.59625Z"
+                    fill="#657786"
+                  />
+                </svg>
+                <!-- like SVG -->
+
+                <transition name="heartbeat">
+                  <!-- liked SVG -->
+                  <svg
+                    v-show="tweet.isLiked"
+                    :key="'heartbeat'"
+                    width="22"
+                    height="20"
+                    viewBox="0 0 22 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M11 19.6381H10.986C8.40295 19.5901 0.949951 12.8561 0.949951 6.47812C0.949951 3.41412 3.47495 0.724121 6.35295 0.724121C8.64295 0.724121 10.183 2.30412 10.999 3.45412C11.813 2.30612 13.353 0.724121 15.644 0.724121C18.524 0.724121 21.048 3.41412 21.048 6.47912C21.048 12.8551 13.594 19.5891 11.011 19.6361H11V19.6381Z"
+                      fill="#E0245E"
+                    />
+                  </svg>
+                </transition>
+                <!-- liked SVG -->
+
+                <transition name="fall">
+                  <span
+                    v-show="!tweet.isLiked"
+                    :key="'fall'"
+                    class="like-count"
+                    >{{ tweet.likeCount }}</span
+                  >
+                </transition>
+                <transition name="rise">
+                  <span
+                    v-show="tweet.isLiked"
+                    :key="'rise'"
+                    class="like-count"
+                    >{{ tweet.likeCount }}</span
+                  >
+                </transition>
               </button>
             </div>
           </div>
@@ -128,16 +160,38 @@ export default {
         this.$bus.$emit('toast', { icon: 'error', title: `${error}` })
       }
     },
-    async deleteLikes(tweet) {
+
+    async toggleLike(tweet) {
+      tweet.isProcessing = true
+
       try {
-        const { data } = await tweetAPI.deleteLike(tweet.id)
-        if (data.status !== 'success') {
-          throw new Error(data.message)
+        if (!tweet.isLiked) {
+          const { data } = await tweetAPI.addLike(tweet.id)
+
+          if (data.status !== 'success') {
+            throw new Error(data.message)
+          }
+
+          tweet.isLiked = !tweet.isLiked
+          tweet.likeCount += 1
+          tweet.isProcessing = false
+        } else {
+          const { data } = await tweetAPI.deleteLike(tweet.id)
+
+          if (data.status !== 'success') {
+            throw new Error(data.message)
+          }
+
+          tweet.isLiked = !tweet.isLiked
+          tweet.likeCount -= 1
+          tweet.isProcessing = false
         }
-        tweet.isLiked = !tweet.isLiked
-        tweet.likeCount -= 1
       } catch (error) {
-        console.log('error2')
+        tweet.isProcessing = false
+
+        console.log(error)
+        this.fetchTweets()
+        this.$bus.$emit('toast', { icon: 'error', title: `${error}` })
       }
     }
   },
@@ -270,6 +324,68 @@ export default {
 .like-icon {
   @include size(15px, 15px);
   margin-right: 10px;
+  button.like {
+    &:hover {
+      span {
+        color: var(--like-icon);
+      }
+
+      path {
+        fill: var(--like-icon);
+      }
+    }
+
+    svg {
+      &.heartbeat-enter-active {
+        transition: opacity 0.25s ease-out;
+        animation: heartbeat 0.65s linear;
+      }
+    }
+
+    span {
+      &.rise-enter-active {
+        color: var(--like-icon);
+        transition: opacity 0.5s ease-out,
+          transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.285);
+      }
+
+      &.rise-enter {
+        opacity: 0.1;
+        transform: translateY(100%);
+      }
+
+      &.fall-enter-active {
+        transition: opacity 0.45s ease-out,
+          transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.285);
+      }
+
+      &.fall-enter {
+        opacity: 0.1;
+        transform: translateY(-75%);
+      }
+    }
+  }
+
+  @keyframes heartbeat {
+    0% {
+      transform: scale(0);
+    }
+    30% {
+      transform: scale(1.4);
+    }
+    40% {
+      transform: scale(0.8);
+    }
+    60% {
+      transform: scale(1.2);
+    }
+    85% {
+      transform: scale(0.85);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
 }
 
 .replay-count,
