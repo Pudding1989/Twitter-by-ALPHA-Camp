@@ -9,30 +9,44 @@
       <!-- 推文區域 -->
       <div class="tweet-area">
         <div class="user-avatar">
-          <router-link to="/profile" >
-            <img class="avatar" :src="currentUser.avatar | nullAvatar" alt="預設的頭像" />
+          <router-link to="/profile">
+            <img
+              class="avatar"
+              :src="currentUser.avatar | nullAvatar"
+              alt="預設的頭像"
+            />
           </router-link>
         </div>
         <!-- 推文輸入框 -->
-        <input
-          v-model="tweet"
-          type="text"
-          class="text-area"
-          placeholder="有什麼新鮮事？"
-        />
-        <button
-          @click.stop.prevent="submitTweet"
-          :disabled="isProcessing"
-          class="tweet-btn"
-          type="button"
-        >
-          推文
-        </button>
+        <div class="text-area d-flex flex-column">
+          <textarea
+            v-model="tweet"
+            type="text"
+            placeholder="有什麼新鮮事？"
+            autofocus
+          />
+          <div class="statusbar d-flex align-items-center">
+            <transition name="hint"
+              ><span v-if="tweetHint" class="hint">{{
+                tweetHint === 'empty' ? '內容不可空白' : '字數不可超過 140 字'
+              }}</span>
+            </transition>
+            <button
+              @click.stop.prevent="submitTweet"
+              :disabled="isProcessing"
+              class="tweet-btn"
+              type="button"
+            >
+              {{ isProcessing ? '推文中..' : '推文' }}
+            </button>
+          </div>
+        </div>
       </div>
+
       <MainTweetList />
     </div>
     <RightColumn />
-    <ReplyModal/>
+    <ReplyModal />
   </div>
 </template>
 
@@ -50,13 +64,15 @@ export default {
   data() {
     return {
       tweet: '',
-      isProcessing: false
+      isProcessing: false,
+      tweetHint: false
     }
   },
   components: {
     Sidebar,
     RightColumn,
-    MainTweetList,ReplyModal
+    MainTweetList,
+    ReplyModal
   },
   computed: {
     ...mapState(['currentUser'])
@@ -69,8 +85,8 @@ export default {
           this.$bus.$emit('toast', { icon: 'error', title: '內容不可空白' })
           return
         }
-        if (this.tweet.length > 140) {
-          this.tweetHint = 'empty'
+        if (this.tweet.length >= 140) {
+          this.tweetHint = true
           this.$bus.$emit('toast', {
             icon: 'error',
             title: '字數不可超過 140 字'
@@ -100,6 +116,14 @@ export default {
         })
       }
     }
+  },
+
+  watch: {
+    tweet(nowState) {
+      nowState.length >= 140
+        ? (this.tweetHint = true)
+        : (this.tweetHint = false)
+    }
   }
 }
 </script>
@@ -110,6 +134,11 @@ export default {
   max-width: 600px;
   min-width: 576px;
   margin: 0 30px;
+
+  background-color: var(--theme-line);
+  & > * {
+    background-color: var(--just-white);
+  }
 }
 
 .main-header {
@@ -130,13 +159,12 @@ export default {
 .tweet-area {
   display: flex;
   height: 120px;
-  border-bottom: 10px solid var(--theme-line);
+  margin-bottom: 10px;
   padding: 10px 15px 10px 15px;
 }
 
 .user-avatar {
-  @include size(50px, 50px);
-  margin: 0 10px auto 15px;
+  margin-right: 10px;
 }
 
 .avatar {
@@ -145,24 +173,75 @@ export default {
 }
 
 .text-area {
-  border: none;
-  height: 100%;
-  width: 80%;
-  padding: 21px 0 73px 10px;
+  flex-grow: 1;
+
+  textarea {
+    flex-grow: 1;
+
+    resize: none;
+    border: none;
+    padding-top: 10px;
+
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 26px;
+
+    transition: color 0.35s ease-out;
+    color: var(--placeholder);
+    &:focus {
+      color: var(--main-text);
+    }
+  }
 }
 
-input[type='text'] {
-  font-size: 18px;
+.statusbar {
+  align-self: flex-end;
+  span {
+    margin-right: 20px;
+
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 15px;
+
+    color: var(--invalid);
+
+    // Vue transition
+    &.hint-enter-active,
+    &.hint-leave-active,
+    &.hint-move {
+      transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+    }
+
+    &.hint-enter {
+      opacity: 0.1;
+      transform: translateY(-50%);
+    }
+
+    &.hint-leave-to {
+      opacity: 0.1;
+      transform: translateY(-50%);
+    }
+  }
 }
 
 .tweet-btn {
-  @include size(66px, 38px);
+  padding: 10px 15px;
+
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 18px;
+
   background-color: var(--theme-color);
   color: var(--just-white);
   border-radius: 100px;
-  margin-top: 51px;
+
   &:hover {
+    color: var(--theme-white);
     background-color: var(--hover-color);
+  }
+
+  &:disabled {
+    background-color: var(--focus-color);
   }
 }
 </style>
