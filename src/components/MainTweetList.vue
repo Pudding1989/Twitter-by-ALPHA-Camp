@@ -4,7 +4,7 @@
     <template v-if="isLoading">
       <div class="tweet-item" v-for="skeleton in 6" :key="skeleton">
         <div class="user-avatar">
-          <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
+          <SkeletonScreen :isLoading="isLoading" :skeleton="'div'">
             <template #skeletonLength></template>
           </SkeletonScreen>
         </div>
@@ -30,7 +30,6 @@
               </SkeletonScreen>
             </div>
           </div>
-          <!-- 點擊貼文內容會跳轉頁面到推文頁面 -->
           <span to="" class="tweet-content">
             <span class="tweet-content">
               <SkeletonScreen :isLoading="isLoading" :skeleton="'div'">
@@ -40,7 +39,7 @@
           </span>
 
           <div class="icon-item">
-            <button class="reply d-flex">
+            <span class="reply d-flex">
               <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
                 <template #skeletonLength>&emsp;&emsp;</template>
               </SkeletonScreen>
@@ -50,11 +49,10 @@
                   <template #skeletonLength>&emsp;</template>
                 </SkeletonScreen></span
               >
-            </button>
+            </span>
 
-            <!-- 點擊喜歡icon不會跳轉頁面 -->
             <div class="like-item">
-              <button class="like d-flex">
+              <span class="like d-flex">
                 <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
                   <template #skeletonLength>&emsp;&emsp;</template>
                 </SkeletonScreen>
@@ -64,7 +62,7 @@
                     <template #skeletonLength>&emsp;</template>
                   </SkeletonScreen>
                 </span>
-              </button>
+              </span>
             </div>
           </div>
         </div>
@@ -323,10 +321,6 @@ export default {
   border-radius: 50%;
   overflow: hidden;
 
-  & > * {
-    display: block;
-  }
-
   img {
     background-color: var(--avatar-img-background);
   }
@@ -375,7 +369,8 @@ export default {
   display: flex;
   align-items: center;
 
-  button {
+  .like,
+  .reply {
     align-items: center;
 
     svg,
@@ -396,7 +391,8 @@ export default {
     }
   }
 
-  button.reply {
+  // for skeleton screen
+  & > *:first-child {
     margin-right: 50px;
   }
 
