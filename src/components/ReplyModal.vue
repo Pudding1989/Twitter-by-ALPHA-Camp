@@ -44,8 +44,7 @@
             <!-- tweet -->
             <div class="tweet d-flex">
               <div class="avatar">
-                <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
-                  <template #skeletonLength></template>
+                <SkeletonScreen :isLoading="isLoading" :skeleton="'div'">
                   <template #originalNode>
                     <router-link :to="`/users/${id}`"
                       ><img :src="avatar | nullAvatar" alt="預設的頭像" />
@@ -57,10 +56,11 @@
               <div class="tweet-body">
                 <div class="d-flex">
                   <h3 class="name">
-                    <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
-                      <template #skeletonLength
-                        >&emsp;&emsp;&emsp;&emsp;&emsp;</template
-                      >
+                    <SkeletonScreen
+                      :isLoading="isLoading"
+                      :skeleton="'span'"
+                      :skeletonLength="6"
+                    >
                       <template #originalNode
                         ><router-link :to="`users/${id}`">{{
                           name
@@ -69,8 +69,11 @@
                     </SkeletonScreen>
                   </h3>
                   <span class="info">
-                    <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
-                      <template #skeletonLength>&emsp;&emsp;&emsp;</template>
+                    <SkeletonScreen
+                      :isLoading="isLoading"
+                      :skeleton="'span'"
+                      :skeletonLength="3"
+                    >
                       <template #originalNode>
                         <router-link :to="`users/${id}`"
                           >@{{ account }}</router-link
@@ -79,8 +82,8 @@
                     >．<SkeletonScreen
                       :isLoading="isLoading"
                       :skeleton="'span'"
+                      :skeletonLength="2"
                     >
-                      <template #skeletonLength>&emsp;&emsp;</template>
                       <template #originalNode>
                         <router-link v-if="!isLoading" :to="`users/${id}`">{{
                           createdAt | fromNow
@@ -91,8 +94,11 @@
                 </div>
 
                 <div class="tweet-content">
-                  <SkeletonScreen :isLoading="isLoading" :skeleton="'div'">
-                    <template #skeletonLength>&emsp;<br />&emsp; </template>
+                  <SkeletonScreen
+                    :isLoading="isLoading"
+                    :skeleton="'div'"
+                    :skeletonLine="2"
+                  >
                     <template #originalNode>
                       <span>{{ description }}</span>
                     </template>
@@ -103,22 +109,14 @@
                   >回覆給&thinsp;<SkeletonScreen
                     :isLoading="isLoading"
                     :skeleton="'span'"
+                    :skeletonLength="3"
                   >
-                    <template #skeletonLength>&emsp;&emsp;&emsp; </template>
                     <template #originalNode>
                       <router-link :to="`users/${id}`"
                         >@{{ account }}</router-link
                       >
                     </template>
                   </SkeletonScreen>
-                  <!-- <transition name="skeleton" mode="out-in">
-                    <span v-if="isLoading" class="loading-mask">
-                      &emsp;&emsp;&emsp;
-                    </span>
-                    <router-link v-if="!isLoading" :to="`users/${id}`"
-                      >@{{ account }}</router-link
-                    ></transition
-                  > -->
                 </span>
               </div>
             </div>
@@ -368,6 +366,7 @@ export default {
 }
 
 .tweet-body {
+  flex-grow: 1;
   margin-left: 10px;
 
   h3.name {
@@ -389,6 +388,7 @@ export default {
   .tweet-content {
     margin: 5px 0 19px;
     max-height: 90px;
+    padding-right: 10px;
     overflow: scroll;
     color: var(--main-text);
     font-size: 15px;

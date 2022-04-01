@@ -4,62 +4,85 @@
     <template v-if="isLoading">
       <div class="tweet-item" v-for="skeleton in 6" :key="skeleton">
         <div class="user-avatar">
-          <SkeletonScreen :isLoading="isLoading" :skeleton="'div'">
-            <template #skeletonLength></template>
+          <SkeletonScreen
+            :isLoading="isLoading"
+            :skeleton="'div'"
+            :skeletonLength="0"
+          >
           </SkeletonScreen>
         </div>
 
         <div class="post-content d-flex flex-column">
           <div class="user-info">
             <div class="user-name">
-              <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
-                <template #skeletonLength
-                  >&emsp;&emsp;&emsp;&emsp;&emsp;</template
-                >
+              <SkeletonScreen
+                :isLoading="isLoading"
+                :skeleton="'div'"
+                :skeletonLength="6"
+              >
               </SkeletonScreen>
             </div>
             <div class="user-accountName">
-              <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
-                <template #skeletonLength>&emsp;&emsp;&emsp;</template>
+              <SkeletonScreen
+                :isLoading="isLoading"
+                :skeleton="'div'"
+                :skeletonLength="3"
+              >
               </SkeletonScreen>
             </div>
-
+            ‧
             <div class="post-time">
-              ‧<SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
-                <template #skeletonLength>&emsp;&emsp;</template>
+              <SkeletonScreen
+                :isLoading="isLoading"
+                :skeleton="'div'"
+                :skeletonLength="2"
+              >
               </SkeletonScreen>
             </div>
           </div>
           <span to="" class="tweet-content">
-            <span class="tweet-content">
-              <SkeletonScreen :isLoading="isLoading" :skeleton="'div'">
-                <template #skeletonLength>&emsp;<br />&emsp;</template>
-              </SkeletonScreen>
-            </span>
+            <SkeletonScreen
+              :isLoading="isLoading"
+              :skeleton="'div'"
+              :skeletonLine="2"
+            >
+            </SkeletonScreen>
           </span>
 
           <div class="icon-item">
             <span class="reply d-flex">
-              <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
-                <template #skeletonLength>&emsp;&emsp;</template>
+              <SkeletonScreen
+                :isLoading="isLoading"
+                :skeleton="'span'"
+                :skeletonLength="1"
+              >
               </SkeletonScreen>
 
               <span class="replay-count"
-                ><SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
-                  <template #skeletonLength>&emsp;</template>
-                </SkeletonScreen></span
-              >
+                ><SkeletonScreen
+                  :isLoading="isLoading"
+                  :skeleton="'span'"
+                  :skeletonLength="1"
+                >
+                </SkeletonScreen
+              ></span>
             </span>
 
             <div class="like-item">
               <span class="like d-flex">
-                <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
-                  <template #skeletonLength>&emsp;&emsp;</template>
+                <SkeletonScreen
+                  :isLoading="isLoading"
+                  :skeleton="'span'"
+                  :skeletonLength="1"
+                >
                 </SkeletonScreen>
 
                 <span class="like-count">
-                  <SkeletonScreen :isLoading="isLoading" :skeleton="'span'">
-                    <template #skeletonLength>&emsp;</template>
+                  <SkeletonScreen
+                    :isLoading="isLoading"
+                    :skeleton="'span'"
+                    :skeletonLength="1"
+                  >
                   </SkeletonScreen>
                 </span>
               </span>
@@ -337,18 +360,30 @@ export default {
 .user-name {
   color: var(--main-text);
   margin-right: 5px;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .user-accountName {
   color: var(--info);
   font-size: 15px;
   font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .post-time {
   color: var(--info);
   font-size: 15px;
   font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .tweet-content {
