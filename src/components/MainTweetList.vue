@@ -3,51 +3,45 @@
     <!-- tweet skeleton -->
     <template v-if="isLoading">
       <div class="tweet-item" v-for="skeleton in 6" :key="skeleton">
-        <div class="user-avatar">
-          <SkeletonScreen
-            :isLoading="isLoading"
-            :skeleton="'div'"
-            :skeletonLength="0"
-          >
-          </SkeletonScreen>
-        </div>
+        <SkeletonScreen
+          :isLoading="isLoading"
+          :skeleton="'div'"
+          :skeletonLength="0"
+          class="user-avatar"
+        >
+        </SkeletonScreen>
 
         <div class="post-content d-flex flex-column">
           <div class="user-info">
-            <div class="user-name">
-              <SkeletonScreen
-                :isLoading="isLoading"
-                :skeleton="'div'"
-                :skeletonLength="6"
-              >
-              </SkeletonScreen>
-            </div>
-            <div class="user-accountName">
-              <SkeletonScreen
-                :isLoading="isLoading"
-                :skeleton="'div'"
-                :skeletonLength="3"
-              >
-              </SkeletonScreen>
-            </div>
-            ‧
-            <div class="post-time">
-              <SkeletonScreen
-                :isLoading="isLoading"
-                :skeleton="'div'"
-                :skeletonLength="2"
-              >
-              </SkeletonScreen>
-            </div>
-          </div>
-          <span to="" class="tweet-content">
             <SkeletonScreen
               :isLoading="isLoading"
               :skeleton="'div'"
-              :skeletonLine="2"
+              :skeletonLength="6"
+              class="user-name"
             >
             </SkeletonScreen>
-          </span>
+            <SkeletonScreen
+              :isLoading="isLoading"
+              :skeleton="'div'"
+              :skeletonLength="3"
+              class="user-accountName"
+            >
+            </SkeletonScreen
+            >‧<SkeletonScreen
+              :isLoading="isLoading"
+              :skeleton="'div'"
+              :skeletonLength="2"
+              class="post-time"
+            >
+            </SkeletonScreen>
+          </div>
+          <SkeletonScreen
+            :isLoading="isLoading"
+            :skeleton="'div'"
+            :skeletonLine="2"
+            class="tweet-content"
+          >
+          </SkeletonScreen>
 
           <div class="icon-item">
             <span class="reply d-flex">
@@ -58,14 +52,13 @@
               >
               </SkeletonScreen>
 
-              <span class="replay-count"
-                ><SkeletonScreen
-                  :isLoading="isLoading"
-                  :skeleton="'span'"
-                  :skeletonLength="1"
-                >
-                </SkeletonScreen
-              ></span>
+              <SkeletonScreen
+                :isLoading="isLoading"
+                :skeleton="'span'"
+                :skeletonLength="1"
+                class="replay-count"
+              >
+              </SkeletonScreen>
             </span>
 
             <div class="like-item">
@@ -77,14 +70,13 @@
                 >
                 </SkeletonScreen>
 
-                <span class="like-count">
-                  <SkeletonScreen
-                    :isLoading="isLoading"
-                    :skeleton="'span'"
-                    :skeletonLength="1"
-                  >
-                  </SkeletonScreen>
-                </span>
+                <SkeletonScreen
+                  :isLoading="isLoading"
+                  :skeleton="'span'"
+                  :skeletonLength="1"
+                  class="like-count"
+                >
+                </SkeletonScreen>
               </span>
             </div>
           </div>
@@ -307,6 +299,13 @@ export default {
     padding: 10px 0;
     position: relative;
   }
+
+  .skeleton,
+  .skeleton-mask {
+    &:hover {
+      text-decoration: none;
+    }
+  }
 }
 
 .tweet-item {
@@ -322,7 +321,7 @@ export default {
   &.tweet-enter-active,
   &.tweet-leave-active {
     transform-origin: top center;
-    transition: opacity 0.65s ease-in-out,
+    transition: opacity 0.35s ease-out,
       transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.285);
   }
 
