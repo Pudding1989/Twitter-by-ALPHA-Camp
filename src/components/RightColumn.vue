@@ -4,59 +4,103 @@
       <span class="column-title"> Popular </span>
     </div>
     <div class="column-list">
-      <transition-group name="sort" tag="div" class="items-container">
+      <template v-if="isLoading">
         <div
           class="list-item d-flex justify-content-between align-items-center"
-          v-for="user in users"
-          :key="user.id"
+          v-for="skeleton in 10"
+          :key="skeleton"
         >
           <div class="user-info">
-            <div class="user-avatar">
+            <SkeletonScreen
+              :isLoading="isLoading"
+              :skeleton="'div'"
+              :skeletonLength="0"
+              class="user-avatar"
+            >
+            </SkeletonScreen>
+
+            <span>
+              <SkeletonScreen
+                :isLoading="isLoading"
+                :skeleton="'div'"
+                :skeletonLength="10"
+                class="user-name"
+              >
+              </SkeletonScreen>
+              <SkeletonScreen
+                :isLoading="isLoading"
+                :skeleton="'div'"
+                :skeletonLength="10"
+                class="user-accountName"
+              >
+                >
+              </SkeletonScreen>
+            </span>
+          </div>
+          <button class="follow" disabled>載入..</button>
+        </div>
+      </template>
+
+      <transition name="fade">
+        <transition-group
+          v-if="!isLoading"
+          name="sort"
+          tag="div"
+          class="items-container"
+        >
+          <div
+            class="list-item d-flex justify-content-between align-items-center"
+            v-for="user in users"
+            :key="user.id"
+          >
+            <div class="user-info">
+              <div class="user-avatar">
+                <router-link :to="{ path: `/users/${user.id}` }">
+                  <img class="avatar-img" :src="user.avatar" />
+                </router-link>
+              </div>
               <router-link :to="{ path: `/users/${user.id}` }">
-                <img class="avatar-img" :src="user.avatar" />
+                <div class="user-name">{{ user.name }}</div>
+                <div class="user-accountName">@{{ user.account }}</div>
               </router-link>
             </div>
-            <router-link :to="{ path: `/users/${user.id}` }">
-              <div class="user-name">{{ user.name }}</div>
-              <div class="user-accountName">@{{ user.account }}</div>
-            </router-link>
-          </div>
 
-          <!-- follow button -->
-          <button
-            v-if="!user.isSelf"
-            @click="toggleFollow(user)"
-            class="follow"
-            :class="{ active: user.isFollowed }"
-            :disabled="user.isProcessing"
-          >
-            {{
-              user.isProcessing
-                ? '跟隨中..'
-                : user.isFollowed
-                ? '正在跟隨'
-                : '跟隨'
-            }}
-          </button>
-        </div>
-      </transition-group>
+            <!-- follow button -->
+            <button
+              v-if="!user.isSelf"
+              @click="toggleFollow(user)"
+              class="follow"
+              :class="{ active: user.isFollowed }"
+              :disabled="isLoading || user.isProcessing"
+            >
+              {{
+                user.isProcessing
+                  ? '跟隨中..'
+                  : user.isFollowed
+                  ? '正在跟隨'
+                  : '跟隨'
+              }}
+            </button>
+          </div>
+        </transition-group>
+      </transition>
     </div>
   </div>
 </template>
 
 <script>
 import userAPI from '../apis/user'
-import Toast from '../components/Toast.vue'
 import followAPI from '../apis/follow'
 import { mapState } from 'vuex'
-import user from '../apis/user'
+import SkeletonScreen from '../components/slot/SkeletonScreen'
 
 export default {
   components: {
-    Toast
+    SkeletonScreen
   },
   data() {
     return {
+      isLoading: true,
       users: []
     }
   },
@@ -92,7 +136,9 @@ export default {
             return { ...user, isProcessing: false }
           }
         })
+        this.isLoading = false
       } catch (error) {
+        this.isLoading = false
         console.log(error)
       }
     },
@@ -144,6 +190,24 @@ export default {
   margin-top: 15px;
   border-radius: 14px;
   background-color: var(--column-background-color);
+
+  .skeleton,
+  .skeleton-mask {
+    &:hover {
+      text-decoration: none;
+    }
+  }
+
+  .items-container {
+    &.fade-enter-active,
+    &.fade-leave-active {
+      transition: opacity 0.35s ease-out,;
+    }
+
+    &.fade-enter {
+      opacity: 0;
+    }
+  }
 }
 .column-header {
   @include size(350px, 45px);
@@ -162,11 +226,28 @@ export default {
   align-items: center;
   border-top: 1px solid var(--theme-line);
 
+  &.sort-enter-active,
+  &.sort-leave-active {
+    transform-origin: 75% 50%;
+    transition: opacity 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.285),
+      transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.285);
+  }
+
+  &.sort-enter {
+    opacity: 0;
+    transform: translateX(-25%);
+  }
+
+  &.sort-leave-to {
+    opacity: 0;
+    transform: translateX(50%) scale(0%);
+  }
+
   &.sort-move {
     z-index: 1;
     background-color: var(--just-white);
     opacity: 0.45;
-    transition: all 0.75s cubic-bezier(0.8, -0.6, 0.1, 1.4) 1.5s;
+    transition: all 0.75s cubic-bezier(0.8, -0.6, 0.1, 1.4);
 
     // css scan shadow #1
     box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
@@ -182,10 +263,12 @@ export default {
 .user-avatar {
   @include size(50px, 50px);
   margin-right: 10px;
+
+  border-radius: 50%;
+  overflow: hidden;
 }
 .avatar-img {
   background-color: var(--avatar-img-background);
-  border-radius: 50%;
   &:hover {
     background-color: darkgray;
   }
