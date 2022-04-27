@@ -9,6 +9,11 @@
       <div class="form-area">
         <div
           class="form-row d-flex flex-column"
+          :class="{
+            invalid: accountHint,
+            'is-loading': isLoading,
+            'is-processing': isProcessing
+          }"
         >
           <label for="account">帳號</label>
 
@@ -18,24 +23,53 @@
               v-model.trim="account"
               id="account"
               type="text"
+              :disabled="isLoading || isProcessing"
             />
           </div>
 
+          <transition name="hint">
+            <p v-if="accountHint" id="account" class="error-hint">
+              {{
+                accountHint === 'empty'
+                  ? '帳號不能空白，請填入想更改的帳號'
+                  : 'Account 已經有人使用'
+              }}
+            </p>
+          </transition>
         </div>
 
         <div
           class="form-row d-flex flex-column"
+          :class="{
+            invalid: nameHint,
+            'is-loading': isLoading,
+            'is-processing': isProcessing
+          }"
         >
           <label for="name">名稱</label>
           <input
             v-model.trim="name"
             type="text"
             id="name"
+            :disabled="isLoading || isProcessing"
           />
+
+          <transition name="hint">
+            <p v-if="nameHint" class="error-hint">字數超出上限！</p>
+          </transition>
+
+          <transition name="hint">
+            <p v-if="nameCount">{{ nameCount }}/50</p>
+          </transition>
         </div>
 
         <div
           class="form-row d-flex flex-column"
+          :class="{
+            invalid: emailHint,
+            'is-loading': isLoading,
+            'is-processing': isProcessing
+          }"
         >
           <label for="email">Email</label>
           <input
@@ -43,7 +77,18 @@
             class="email"
             type="email"
             id="email"
+            :disabled="isLoading || isProcessing"
           />
+          <transition name="hint">
+            <p v-if="emailHint" class="error-hint">
+              {{
+                emailHint === 'empty'
+                  ? 'Email不能空白，請填入想更改的 Email'
+                  : 'Email 已經有人使用'
+              }}
+            </p>
+          </transition>
+
           <transition name="hint">
             <div v-if="emailCheck" class="hint d-flex align-items-center">
               <!-- check SVG -->
@@ -69,24 +114,44 @@
 
         <div
           class="form-row d-flex flex-column"
+          :class="{
+            invalid: passwordHint,
+            'is-loading': isLoading,
+            'is-processing': isProcessing
+          }"
         >
           <label for="password">密碼</label>
           <input
             v-model.trim="password"
+            @blur="passwordLength"
             type="password"
             id="password"
+            :disabled="isLoading || isProcessing"
           />
+          <transition name="hint">
+            <p v-if="passwordHint" class="error-hint">密碼至少要有４個字</p>
+          </transition>
         </div>
 
         <div
           class="form-row d-flex flex-column"
+          :class="{
+            invalid: checkHint,
+            'is-loading': isLoading,
+            'is-processing': isProcessing
+          }"
         >
           <label for="passwordCheck">密碼確認</label>
           <input
             v-model.trim="passwordCheck"
+            @blur="checkPassword"
             type="password"
             id="passwordCheck"
+            :disabled="isLoading || isProcessing"
           />
+          <transition name="hint">
+            <p v-if="checkHint" class="error-hint">密碼確認錯誤！</p>
+          </transition>
         </div>
 
         <div class="footer">
@@ -121,6 +186,7 @@
             type="submit"
             @mouseenter="saveHint"
             class="save"
+            :disabled="isProcessing"
           >
             <Spinner v-if="isProcessing" />
             {{ isProcessing ? '儲存中..' : '儲存' }}
@@ -145,19 +211,35 @@ export default {
 
   data() {
     return {
+      isLoading: true,
       account: '',
+      accountHint: false,
       name: '',
+      nameHint: false,
       email: '',
+      emailInit: '',
       emailHint: false,
       emailCheck: false,
       password: '',
+      passwordHint: false,
       passwordCheck: '',
+      checkHint: false,
       modify: false,
       isProcessing: false
     }
   },
+
+  computed: {
+    nameCount() {
+      this.name.length > 50 ? (this.nameHint = true) : (this.nameHint = false)
+      return this.name.length
+    }
+  },
+
   watch: {
     account(newInput) {
+      newInput ? (this.accountHint = false) : (this.accountHint = 'empty')
+
       newInput !== this.$store.state.currentUser.account
         ? (this.modify = true)
         : (this.modify = false)
@@ -170,32 +252,66 @@ export default {
     },
 
     email(newInput) {
+      newInput ? (this.emailHint = false) : (this.emailHint = 'empty')
+
       newInput.match(/[^@\s]+@[^@\s]+\.[^@\s]+/)
         ? (this.emailCheck = true)
         : (this.emailCheck = false)
 
       newInput !== this.emailInit ? (this.modify = true) : (this.modify = false)
     },
+
+    password(newInput, oldInput) {
+      newInput !== oldInput && (this.passwordHint = false)
+    },
+
+    passwordCheck(newInput, oldInput) {
+      newInput !== oldInput && (this.checkHint = false)
+    }
+  },
+
+  created() {
+    this.fetchAccount()
+  },
+
   methods: {
-    async handleSubmit() {
+    passwordLength() {
+      this.password && this.password.length < 4
+        ? (this.passwordHint = true)
+        : (this.passwordHint = false)
+    },
+
+    checkPassword() {
+      this.passwordCheck && this.password !== this.passwordCheck
+        ? (this.checkHint = true)
+        : (this.checkHint = false)
+    },
+
+    async fetchAccount() {
+      this.isLoading = true
       try {
-        // 前端驗證
-        if (!this.account) {
+        const { data } = await userAPI.getCurrent()
+
+        if (data.status !== 'success') {
           this.$bus.$emit('toast', {
             icon: 'error',
-            title: '請填入想更改的帳號'
+            title: '無法取得資料'
           })
-
-          return
         }
 
-        if (!this.name) {
-          this.$bus.$emit('toast', { icon: 'error', title: '請填入名稱' })
+        const { account, name, email } = data.data
+        this.account = account
+        this.name = name
+        this.email = email
+        this.emailInit = email
+      } catch (error) {
+        console.log(error)
+        this.$bus.$emit({ title: `${error}` })
+      } finally {
+        this.isLoading = false
+      }
+    },
 
-          return
-        } else if (this.name.length > 50) {
-          this.$bus.$emit('toast', { icon: 'error', title: '字數超出上限！' })
-        }
     async handleSubmit() {
       // 前端驗證
       if (!this.modify && !this.password) {
@@ -207,40 +323,55 @@ export default {
         return
       }
 
-          return
-        } else if (!/[^@\s]+@[^@\s]+\.[^@\s]+/.test(this.email)) {
-          this.$bus.$emit('toast', { icon: 'error', title: 'Email 格式錯誤' })
-          return
-        }
+      if (!this.account) {
+        this.$bus.$emit('toast', {
+          icon: 'error',
+          title: '請填入想更改的帳號'
+        })
 
-        if (!this.password) {
-          this.$bus.$emit('toast', { icon: 'error', title: '請填入密碼' })
+        return
+      }
 
-          return
-        } else if (this.password.length < 4) {
-          this.$bus.$emit('toast', {
-            icon: 'error',
-            title: '密碼至少要有四個字'
-          })
+      if (this.name.length > 50) {
+        this.$bus.$emit('toast', { icon: 'error', title: '字數超出上限！' })
+      }
 
-          return
-        }
-        // 密碼確認欄位
-        if (!this.passwordCheck) {
-          this.$bus.$emit('toast', { icon: 'error', title: '請再次確認密碼' })
+      if (!this.email) {
+        this.$bus.$emit('toast', { icon: 'error', title: '請填入 Email' })
 
-          return
-        } else if (this.password !== this.passwordCheck) {
-          this.$bus.$emit('toast', {
-            icon: 'error',
-            title: '密碼與密碼確認輸入內容不同'
-          })
+        return
+      } else if (!/[^@\s]+@[^@\s]+\.[^@\s]+/.test(this.email)) {
+        this.$bus.$emit('toast', { icon: 'error', title: 'Email 格式錯誤' })
+        return
+      }
 
-          return
-        }
+      if (this.password && this.password.length < 4) {
+        this.$bus.$emit('toast', {
+          icon: 'error',
+          title: '密碼至少要有四個字'
+        })
 
-        this.isProcessing = true
+        return
+      }
+      // 密碼確認欄位
+      if (this.password && !this.passwordCheck) {
+        this.$bus.$emit('toast', {
+          icon: 'error',
+          title: '請再次輸入密碼'
+        })
 
+        return
+      } else if (this.password !== this.passwordCheck) {
+        this.$bus.$emit('toast', {
+          icon: 'error',
+          title: '密碼與密碼確認輸入內容不同'
+        })
+
+        return
+      }
+
+      this.isProcessing = true
+      try {
         const { data } = await userAPI.editAccount({
           account: this.account,
           name: this.name,
@@ -248,40 +379,71 @@ export default {
           password: this.password
         })
 
-        console.log(data)
-
-        if (data.status === 'success') {
-          this.$bus.$emit('toast', {
-            icon: 'success',
-            title: '資料修改成功'
-          })
-          this.isProcessing = false
-        } else {
-          this.$bus.$emit('toast', {
-            icon: 'error',
-            title: `${data.message}`
-          })
+        if (data.status !== 'success') {
           throw new Error(data.message)
         }
-      } catch (error) {
-        this.isProcessing = false
-        console.log(error)
-        this.$bus.$emit('toast', {
-          icon: 'error',
-          title: `${data.message}`
-        })
-      }
-    },
-    async fetchAccount() {
-      try {
-        const { data } = await userAPI.getCurrent()
 
-        if (data.status !== 'success') {
+        this.fetchAccount()
+        this.$store.dispatch('fetchCurrentUser')
+
+        this.$bus.$emit('toast', {
+          icon: 'success',
+          title: '資料修改成功'
+        })
+
+        this.modify = false
+      } catch (error) {
+        console.log(error)
+
+        // 後端驗證
+        if (
+          error.message.match(/account/i) &&
+          error.message.match(/required/i)
+        ) {
+          // 帳號
           this.$bus.$emit('toast', {
             icon: 'error',
-            title: '無法取得資料'
+            title: '帳號不能空白'
+          })
+
+          this.accountHint = 'empty'
+
+        } else if (error.message.match(/暱稱/) && error.message.match(/上限/)) {
+          // 名稱
+          this.$bus.$emit('toast', {
+            icon: 'error',
+            title: '名稱字數超過上限'
+          })
+
+          this.nameHint = true
+        }else if (error.message.match(/email/i) && error.message.match(/required/i)) {
+          // email
+          this.$bus.$emit('toast', {
+            icon: 'error',
+            title: 'Email 不能空白'
+          })
+
+          this.emailHint = 'empty'
+        }else if (error.message.match(/密碼至少/)) {
+          // 密碼
+          this.$bus.$emit('toast', {
+            icon: 'error',
+            title: '密碼至少要有四個字'
+          })
+
+          this.passwordHint = true
+        } else {
+          // 其他錯誤訊息
+          this.$bus.$emit('toast', {
+            icon: 'error',
+            title: `${error.message}`
           })
         }
+      } finally {
+        this.isProcessing = false
+      }
+    },
+
     restore() {
       this.isLoading = true
 
@@ -302,12 +464,6 @@ export default {
         })
       }
     }
-  },
-  created() {
-    this.fetchAccount()
-  },
-  components: {
-    Sidebar
   }
 }
 </script>
