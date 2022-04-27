@@ -1,0 +1,92 @@
+// * depends on formCommon scss
+//  for sign in, sign up, admin sign in
+
+.form-area {
+  max-width: 540px;
+  min-width: 460px;
+
+  // for mobile layout
+  margin: 60px auto 0;
+  padding: 0 5%;
+
+  svg.logo {
+    width: 50px;
+    height: 50px;
+
+    & > path {
+      transition: fill 0.35s ease-in;
+    }
+
+    &:hover > path {
+      fill: var(--hover-color);
+    }
+  }
+
+  h1.title {
+    margin: 20px auto 40px;
+
+    font-size: 23px;
+    line-height: 33px;
+
+    font-weight: 700;
+
+    color: var(--main-text);
+  }
+}
+
+.form-row {
+  input {
+    text-align: center;
+  }
+}
+
+button {
+  margin-bottom: 20px;
+
+  width: 100%;
+  padding: 10px 0;
+
+  .spinner.center {
+    position: relative;
+    margin: unset;
+    margin-right: 1em;
+
+    // 手動調整對齊文字
+    transform: translateY(2px);
+
+    --spinner-size: inherit;
+    --spinner-color: var(--just-white);
+  }
+}
+
+.link-container {
+  align-self: flex-end;
+  color: var(--router-link);
+}
+
+a {
+  color: var(--router-link);
+  text-decoration: underline;
+
+  font-size: 18px;
+  line-height: 26px;
+
+  font-weight: 700;
+
+  transition: color 0.35s ease-in, background-color 0.35s ease-in;
+
+  &:hover {
+    color: var(--hover-color);
+  }
+  &:focus,
+  &:active {
+    color: var(--focus-color);
+  }
+}
+
+@media screen and (min-width: $breakpoint) {
+  .form-area {
+    margin: 60px auto 0;
+    padding: unset;
+  }
+}
