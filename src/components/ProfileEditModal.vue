@@ -340,12 +340,11 @@ export default {
         if (data.status === 'success') {
           this.$bus.$emit('submit-profile', true)
           this.isProcessing = false
-          this.modal = false
-          this.$router.push({ path: '/profile' })
           this.$bus.$emit('toast', {
             icon: 'success',
             title: '已儲存成功！！'
           })
+          this.modal = false
         } else {
           throw new Error(data.message)
         }
