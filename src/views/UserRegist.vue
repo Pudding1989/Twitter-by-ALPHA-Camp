@@ -43,6 +43,7 @@
 
     <div
       class="form-row d-flex flex-column"
+      :class="{ invalid: accountHint, 'is-processing': isProcessing }"
     >
       <label for="account"> 帳號 </label>
       <input
@@ -50,11 +51,20 @@
         id="account"
         type="text"
         autocomplete="username"
+        :disabled="isProcessing"
       />
+      <transition name="hint">
+        <p v-if="accountHint" class="error-hint">
+          {{
+            accountHint === 'empty' ? '請輸入帳號！' : 'account 已重複註冊！'
+          }}
+        </p>
+      </transition>
     </div>
 
     <div
       class="form-row d-flex flex-column"
+      :class="{ invalid: nameHint, 'is-processing': isProcessing }"
     >
       <label for="name">名稱</label>
       <input
@@ -62,11 +72,22 @@
         id="name"
         type="text"
         autocomplete="nickname"
+        :disabled="isProcessing"
       />
+      <transition name="hint">
+        <p v-if="nameHint" class="error-hint">
+          {{ nameHint === 'empty' ? '請輸入名稱！' : '字數超出上限！' }}
+        </p>
+      </transition>
+
+      <transition name="hint">
+        <p v-if="nameCount">{{ nameCount }}/50</p>
+      </transition>
     </div>
 
     <div
       class="form-row d-flex flex-column"
+      :class="{ invalid: emailHint, 'is-processing': isProcessing }"
     >
       <label for="email">Email</label>
       <input
@@ -75,7 +96,19 @@
         id="email"
         type="email"
         autocomplete="email"
+        :disabled="isProcessing"
       />
+      <transition name="hint">
+        <p v-if="emailHint" class="error-hint">
+          {{
+            emailHint === 'empty'
+              ? '請輸入名稱！'
+              : emailHint === 'format'
+              ? 'Email 格式錯誤'
+              : 'Email 已重複註冊！'
+          }}
+        </p>
+      </transition>
 
       <transition name="hint">
         <div v-if="emailCheck" class="hint d-flex align-items-center">
@@ -102,26 +135,40 @@
 
     <div
       class="form-row d-flex flex-column"
+      :class="{ invalid: passwordHint, 'is-processing': isProcessing }"
     >
       <label for="password">密碼</label>
       <input
         v-model.trim="password"
+        @blur="passwordLength"
         id="password"
         type="password"
         autocomplete="new-password"
+        :disabled="isProcessing"
       />
+      <transition name="hint">
+        <p v-if="passwordHint" class="error-hint">密碼至少要有４個字</p>
+      </transition>
     </div>
 
     <div
       class="form-row d-flex flex-column"
+      :class="{ invalid: checkHint, 'is-processing': isProcessing }"
     >
       <label for="passwordCheck">密碼確認</label>
       <input
         v-model.trim="passwordCheck"
+        @blur="checkPassword"
         id="passwordCheck"
         type="password"
         autocomplete="new-password"
+        :disabled="isProcessing"
       />
+      <transition name="hint">
+        <p v-if="checkHint" class="error-hint">
+          {{ checkHint === 'empty' ? '請再次輸入密碼' : '密碼確認錯誤！' }}
+        </p>
+      </transition>
     </div>
 
     <button class="register" type="submit" :disabled="isProcessing">
@@ -144,6 +191,7 @@ export default {
       account: '',
       accountHint: false,
       name: '',
+      nameHint: false,
       email: '',
       emailHint: false,
       emailCheck: false,
@@ -154,12 +202,34 @@ export default {
       isProcessing: false
     }
   },
+
+  computed: {
+    nameCount() {
+      this.name.length > 50 ? (this.nameHint = true) : (this.nameHint = false)
+      return this.name.length
+    }
+  },
+
   watch: {
+    account(newInput, oldInput) {
+      newInput && newInput !== oldInput && (this.accountHint = false)
+    },
 
     email(newInput, oldInput) {
+      newInput !== oldInput && (this.emailHint = false)
+
+      newInput.match(/[^@\s]+@[^@\s]+\.[^@\s]+/)
         ? (this.emailCheck = true)
         : (this.emailCheck = false)
     },
+
+    password(newInput, oldInput) {
+      newInput !== oldInput && (this.passwordHint = false)
+    },
+
+    passwordCheck(newInput, oldInput) {
+      newInput !== oldInput && (this.checkHint = false)
+    }
   },
 
   methods: {
@@ -169,25 +239,17 @@ export default {
         ? (this.emailHint = 'format')
         : (this.emailHint = false)
     },
-    passwordLength() {
-      if (this.password && this.password.length < 4) {
-        this.$bus.$emit('toast', { icon: 'error', title: '密碼至少要有四個字' })
 
-        this.passwordHint = true
-      } else {
-        this.passwordHint = false
-      }
+    passwordLength() {
+      this.password && this.password.length < 4
+        ? (this.passwordHint = true)
+        : (this.passwordHint = false)
     },
+
     checkPassword() {
-      if (
-        this.password &&
-        this.passwordCheck &&
-        this.password !== this.passwordCheck
-      ) {
-        this.checkHint = true
-      } else {
-        this.checkHint = false
-      }
+      this.passwordCheck && this.password !== this.passwordCheck
+        ? (this.checkHint = true)
+        : (this.checkHint = false)
     },
 
     async handleSubmit() {
@@ -199,38 +261,52 @@ export default {
             title: '請填入想註冊的帳號'
           })
 
+          this.accountHint = 'empty'
           return
         }
 
         if (!this.name) {
           this.$bus.$emit('toast', { icon: 'error', title: '請填入名稱' })
 
+          this.nameHint = 'empty'
           return
         } else if (this.name.length > 50) {
-          this.$bus.$emit('toast', { icon: 'error', title: '字數超出上限！' })
+          this.$bus.$emit('toast', {
+            icon: 'error',
+            title: '名稱字數超出上限！'
+          })
+
+          this.nameHint = true
+          return
         }
 
         if (!this.email) {
           this.$bus.$emit('toast', { icon: 'error', title: '請填入 Email' })
 
+          this.emailHint = 'empty'
           return
         }
+
         if (!this.password) {
           this.$bus.$emit('toast', { icon: 'error', title: '請填入密碼' })
 
+          this.passwordHint = true
           return
         } else if (this.password.length < 4) {
           this.$bus.$emit('toast', {
             icon: 'error',
-            title: '密碼至少要有四個字'
+            title: '密碼至少要有４個字'
           })
 
+          this.passwordHint = 'empty'
           return
         }
+
         // 密碼確認欄位
         if (!this.passwordCheck) {
           this.$bus.$emit('toast', { icon: 'error', title: '請再次確認密碼' })
 
+          this.checkHint = 'empty'
           return
         } else if (this.password !== this.passwordCheck) {
           this.$bus.$emit('toast', {
@@ -238,6 +314,7 @@ export default {
             title: '密碼與密碼確認輸入內容不同'
           })
 
+          this.checkHint = true
           return
         }
 
@@ -251,13 +328,10 @@ export default {
           password: this.password
         })
 
-        if (data.status === 'error') {
-          this.$bus.$emit('toast', {
-            icon: 'error',
-            title: `${data.message}`
-          })
+        if (data.status !== 'success') {
           throw new Error(data.message)
         }
+
         // 發送成功訊息
         this.$bus.$emit('toast', {
           icon: 'success',
@@ -265,44 +339,74 @@ export default {
         })
         // 轉址
         this.$router.push({ name: 'user-login' })
-        this.isProcessing = false
       } catch (error) {
-        this.isProcessing = false
         console.log(error)
-        this.$bus.$emit({ title: `${error}` })
+        this.isProcessing = false
+
+        // 後端驗證
+        // 帳號
+        if (error.message.match(/account/i) && error.message.match(/必填/)) {
+          this.$bus.$emit('toast', {
+            icon: 'error',
+            title: '帳號為必填欄位'
+          })
+
+          this.accountHint = 'empty'
+        } else if (
+          error.message.match(/account/i) &&
+          error.message.match(/重複/)
+        ) {
+          this.$bus.$emit('toast', {
+            icon: 'error',
+            title: 'account 已重複註冊！'
+          })
+
+          this.accountHint = true
+        } else if (error.message.match(/字數/) && error.message.match(/超出/)) {
+          // 名稱
+          this.$bus.$emit('toast', {
+            icon: 'error',
+            title: '名稱字數超出上限'
+          })
+
+          this.nameHint = true
+        } else if (
+          error.message.match(/email/i) &&
+          error.message.match(/必填/)
+        ) {
+          // Email
+          this.$bus.$emit('toast', {
+            icon: 'error',
+            title: 'Email 為必填欄位'
+          })
+
+          this.accountHint = 'empty'
+        } else if (
+          error.message.match(/email/i) &&
+          error.message.match(/重複/)
+        ) {
+          this.$bus.$emit('toast', {
+            icon: 'error',
+            title: 'email 已重複註冊！'
+          })
+
+          this.accountHint = true
+        } else if (error.message.match(/密碼至少/)) {
+          this.$bus.$emit('toast', {
+            icon: 'error',
+            title: '密碼至少要有４個字'
+          })
+
+          this.passwordHint = true
+        } else {
+          // 其他錯誤訊息
+          this.$bus.$emit('toast', { icon: 'error', title: `${error.message}` })
+        }
       }
     }
   }
 }
-
-.logo {
-  width: 50px;
-  height: 50px;
-}
-
-
-
-
-
-
-.regist-btn {
-  background-color: var(--theme-color);
-  width: 100%;
-  height: 46px;
-  border-radius: 50px;
-  color: var(--just-white);
-  font-size: 18px;
-  line-height: 26px;
-  text-align: center;
-  //TODO:看看邊框顏色還要不要更換，若時間充裕再來優化點擊按鈕後的動畫
-  &:hover {
-    background-color: var(--hover-color);
-  }
-  &:active,
-  &:focus {
-    background-color: var(--focus-color);
-  }
-}
+</script>
 
 <style lang="scss" scoped>
 @import '../styles/formCommon.scss';
