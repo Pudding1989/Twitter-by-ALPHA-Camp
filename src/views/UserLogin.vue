@@ -42,6 +42,7 @@
 
     <div
       class="form-row d-flex flex-column"
+      :class="{ invalid: accountHint, 'is-processing': isProcessing }"
     >
       <label for="account">帳號</label>
       <input
@@ -50,17 +51,25 @@
         id="account"
         type="text"
       />
+      <transition name="hint">
+        <p v-if="accountHint" class="error-hint">帳號不存在！</p>
+      </transition>
     </div>
 
     <div
       class="form-row d-flex flex-column"
+      :class="{ invalid: passwordHint, 'is-processing': isProcessing }"
     >
       <label for="password">密碼</label>
       <input
         v-model.trim="password"
+        :disabled="isProcessing"
         id="password"
         type="password"
       />
+      <transition name="hint">
+        <p v-if="passwordHint" class="error-hint">密碼錯誤！</p>
+      </transition>
     </div>
 
     <button
@@ -70,6 +79,7 @@
       type="submit"
     >
       <Spinner v-if="isProcessing" />
+      <span>{{ isProcessing ? '登入中..' : '登入' }}</span>
     </button>
     <div class="link-container">
       <router-link to="/regist">註冊Alphitter</router-link>
@@ -89,31 +99,54 @@ export default {
   data() {
     return {
       account: '',
+      accountHint: false,
       password: '',
+      passwordHint: false,
       isProcessing: false
     }
   },
+
+  watch: {
+    account(newInput, oldInput) {
+      if (newInput !== oldInput && this.accountHint === true) {
+        this.accountHint = false
+      }
+    },
+    password(newInput, oldInput) {
+      if (newInput !== oldInput && this.passwordHint === true) {
+        this.passwordHint = false
+      }
+    }
+  },
+
   methods: {
     async handleSubmit() {
+      if (this.accountHint || this.passwordHint) {
+        this.$bus.$emit('toast', {
+          icon: 'error',
+          title: `看一下錯誤提示，再按登入啦！`
+        })
+        return
+      }
+
+      if (!this.account) {
+        this.$bus.$emit('toast', {
+          icon: 'error',
+          title: '請輸入帳號'
+        })
+        return
+      }
+
+      if (!this.password) {
+        this.$bus.$emit('toast', {
+          icon: 'error',
+          title: '請輸入密碼'
+        })
+        return
+      }
+
+      this.isProcessing = true
       try {
-        if (!this.account) {
-          this.$bus.$emit('toast', {
-            icon: 'error',
-            title: '請輸入帳號'
-          })
-          return
-        }
-
-        if (!this.password) {
-          this.$bus.$emit('toast', {
-            icon: 'error',
-            title: '請輸入密碼'
-          })
-          return
-        }
-
-        this.isProcessing = true
-
         const { data } = await authorizationAPI.signIn({
           account: this.account,
           password: this.password
@@ -128,16 +161,28 @@ export default {
         // 用commit改寫 vuex store state
         this.$store.commit('setCurrentUser', data.data.user)
 
-           // 發送成功訊息
+        // 發送成功訊息
         this.$bus.$emit('toast', {
           icon: 'success',
           title: '登入成功'
         })
-        this.$router.push({name: 'main'})
+        this.$router.push({ name: 'main' })
       } catch (error) {
-        this.$bus.$emit('toast', { icon: 'error', title: `${error}` })
         this.isProcessing = false
+
         console.log(error)
+        if (error.message.match(/帳號不存在/)) {
+          this.accountHint = true
+          this.$bus.$emit('toast', { icon: 'error', title: '帳號不存在!' })
+        }
+
+        if (
+          error.message.match(/Incorrect/i) &&
+          error.message.match(/Password!/i)
+        ) {
+          this.passwordHint = true
+          this.$bus.$emit('toast', { icon: 'error', title: '密碼錯誤！' })
+        }
       }
     }
   }
@@ -149,10 +194,6 @@ export default {
 @import '../styles/loginCommon.scss';
 
 
-.logo {
-  width: 50px;
-  height: 50px;
-}
 
 .form-row {
   // 密碼欄
@@ -160,7 +201,38 @@ export default {
     margin-bottom: 40px;
   }
 
+  &.is-processing {
+    background-size: 200% 100%;
+    background-image: linear-gradient(
+      110deg,
+      var(--input-background) 6%,
+      var(--theme-line) 18%,
+      var(--input-background) 33%
+    );
+    animation: scan-right 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 
+    &::after {
+      background-size: 200% 100%;
+      background-image: linear-gradient(
+        110deg,
+        var(--theme-line) 6%,
+        var(--theme-white) 18%,
+        var(--theme-line) 33%
+      );
+      animation: scan-left 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+
+    @keyframes scan-left {
+      to {
+        background-position-x: -200%;
+      }
+    }
+
+    @keyframes scan-right {
+      to {
+        background-position-x: 200%;
+      }
+    }
   }
 }
 
