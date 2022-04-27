@@ -90,9 +90,36 @@
         </div>
 
         <div class="footer">
+          <transition name="fade">
+            <button
+              v-if="modify"
+              @click="restore"
+              type="button"
+              class="restore"
+              :disabled="isProcessing"
+            >
+              <!-- time past SVG -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                width="512"
+                height="512"
+              >
+                <path
+                  d="M12,0A11.972,11.972,0,0,0,4,3.073V1A1,1,0,0,0,2,1V4A3,3,0,0,0,5,7H8A1,1,0,0,0,8,5H5a.854.854,0,0,1-.1-.021A9.987,9.987,0,1,1,2,12a1,1,0,0,0-2,0A12,12,0,1,0,12,0Z"
+                />
+                <path
+                  d="M12,6a1,1,0,0,0-1,1v5a1,1,0,0,0,.293.707l3,3a1,1,0,0,0,1.414-1.414L13,11.586V7A1,1,0,0,0,12,6Z"
+                />
+              </svg>
+              <!-- time past SVG -->
+              回復設定
+            </button>
+          </transition>
 
           <button
             type="submit"
+            @mouseenter="saveHint"
             class="save"
           >
             <Spinner v-if="isProcessing" />
@@ -121,18 +148,33 @@ export default {
       account: '',
       name: '',
       email: '',
+      emailHint: false,
       emailCheck: false,
       password: '',
       passwordCheck: '',
+      modify: false,
       isProcessing: false
     }
   },
   watch: {
+    account(newInput) {
+      newInput !== this.$store.state.currentUser.account
+        ? (this.modify = true)
+        : (this.modify = false)
+    },
+
+    name(newInput) {
+      newInput !== this.$store.state.currentUser.name
+        ? (this.modify = true)
+        : (this.modify = false)
+    },
+
     email(newInput) {
       newInput.match(/[^@\s]+@[^@\s]+\.[^@\s]+/)
         ? (this.emailCheck = true)
         : (this.emailCheck = false)
 
+      newInput !== this.emailInit ? (this.modify = true) : (this.modify = false)
     },
   methods: {
     async handleSubmit() {
@@ -154,9 +196,16 @@ export default {
         } else if (this.name.length > 50) {
           this.$bus.$emit('toast', { icon: 'error', title: '字數超出上限！' })
         }
+    async handleSubmit() {
+      // 前端驗證
+      if (!this.modify && !this.password) {
+        this.$bus.$emit('toast', {
+          icon: 'error',
+          title: '你沒有修改任何帳戶資料喔'
+        })
 
-        if (!this.email) {
-          this.$bus.$emit('toast', { icon: 'error', title: '請填入 Email' })
+        return
+      }
 
           return
         } else if (!/[^@\s]+@[^@\s]+\.[^@\s]+/.test(this.email)) {
@@ -233,14 +282,24 @@ export default {
             title: '無法取得資料'
           })
         }
+    restore() {
+      this.isLoading = true
 
-        const { account, name, email } = data.data
-        this.account = account
-        this.name = name
-        this.email = email
-      } catch (error) {
-        console.log(error)
-        this.$bus.$emit({ title: `${error}` })
+      this.account = this.$store.state.currentUser.account
+      this.name = this.$store.state.currentUser.name
+      this.email = this.emailInit
+      this.password = ''
+      this.passwordCheck = ''
+
+      this.isLoading = false
+    },
+
+    saveHint() {
+      if (this.modify) {
+        this.$bus.$emit('toast', {
+          icon: 'success',
+          title: '尚未儲存前，都可以回復原本帳戶資料'
+        })
       }
     }
   },
@@ -314,7 +373,21 @@ export default {
     }
   }
 
+  button.restore {
+    svg {
+      margin-right: 0.1em;
+      transform: translateY(15%);
+    }
 
+    &.fade-enter-active,
+    &.fade-leave-active {
+      transition: opacity 0.35s ease-out;
+    }
+
+    &.fade-enter,
+    &.fade-leave-to {
+      opacity: 0;
+    }
   }
 }
 
