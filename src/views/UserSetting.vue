@@ -3,74 +3,95 @@
     <Sidebar />
     <form class="setting-form" @submit="handleSubmit">
       <div class="form-header">
-        <span class="form-title">帳戶設定</span>
+        <h2 class="title">帳戶設定</h2>
       </div>
 
-      <div class="input-container">
-        <label class="input-title"> 帳號 </label>
-        <input
-          v-model="account"
-          class="accountName"
-          type="accountName"
-          style="font-size: 25px"
-        />
-        <label class="error-text"> 帳號不存在！ </label>
-      </div>
+      <div class="form-area">
+        <div
+          class="form-row d-flex flex-column"
+        >
+          <label for="account">帳號</label>
 
-      <div class="input-container">
-        <label class="input-title"> 名稱 </label>
-        <input
-          v-model="name"
-          class="name"
-          type="name"
-          style="font-size: 25px"
-        />
-        <label class="error-text"> 名稱不存在！ </label>
-      </div>
+          <div class="d-flex">
+            <span>@</span>
+            <input
+              v-model.trim="account"
+              id="account"
+              type="text"
+            />
+          </div>
 
-      <div class="input-container">
-        <label class="input-title"> Email </label>
-        <input
-          v-model="email"
-          class="email"
-          type="email"
-          style="font-size: 25px"
-        />
-        <label class="error-text"> Email不存在！ </label>
-      </div>
+        </div>
 
-      <div class="input-container">
-        <label class="input-title"> 密碼 </label>
-        <input
-          v-model="password"
-          class="password"
-          type="password"
-          style="font-size: 25px"
-        />
-        <label class="error-text"> 密碼不存在！ </label>
-      </div>
+        <div
+          class="form-row d-flex flex-column"
+        >
+          <label for="name">名稱</label>
+          <input
+            v-model.trim="name"
+            type="text"
+            id="name"
+          />
+        </div>
 
-      <div class="input-container">
-        <label class="input-title"> 密碼確認 </label>
-        <input
-          v-model="passwordCheck"
-          class="passwordCheck"
-          type="password"
-          style="font-size: 25px"
-        />
-        <label class="error-text"> 密碼確認錯誤！ </label>
-      </div>
+        <div
+          class="form-row d-flex flex-column"
+        >
+          <label for="email">Email</label>
+          <input
+            v-model.trim="email"
+            class="email"
+            type="email"
+            id="email"
+          />
+        </div>
 
-      <button class="saveBtn" :disabled="isProcessing">儲存</button>
+        <div
+          class="form-row d-flex flex-column"
+        >
+          <label for="password">密碼</label>
+          <input
+            v-model.trim="password"
+            type="password"
+            id="password"
+          />
+        </div>
+
+        <div
+          class="form-row d-flex flex-column"
+        >
+          <label for="passwordCheck">密碼確認</label>
+          <input
+            v-model.trim="passwordCheck"
+            type="password"
+            id="passwordCheck"
+          />
+        </div>
+
+        <div class="footer">
+
+          <button
+            type="submit"
+            class="save"
+          >
+            {{ isProcessing ? '儲存中..' : '儲存' }}
+          </button>
+        </div>
+      </div>
     </form>
   </div>
 </template>
 
 <script>
 import Sidebar from '../components/Sidebar.vue'
+
 import userAPI from '../apis/user'
 
 export default {
+  components: {
+    Sidebar,
+  },
+
   data() {
     return {
       account: '',
@@ -201,104 +222,92 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '../styles/formCommon.scss';
+
 .setting-container {
   display: flex;
-  height: 100%;
 }
 
 .setting-form {
+  flex-grow: 1;
+  // for mobile layout
+  margin-left: 12px;
+
   border-left: 1px solid var(--theme-line);
-  width: 100%;
-  position: relative;
-  margin-left: 40px;
 }
 
 .form-header {
   border-bottom: 1px solid var(--theme-line);
-  backdrop-filter: blur(12px);
-  position: relative;
-  padding-left: 20px;
-  width: 100%;
-  height: 55px;
+  padding: 13px 20px;
+
+  h2.title {
+    color: var(--main-text);
+    font-size: 19px;
+    line-height: 28px;
+
+    font-weight: 700;
+  }
 }
 
-.form-title {
-  font-size: 19px;
-  font-weight: 700;
-  line-height: 27.51px;
-  color: var(--main-text);
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+.form-area {
+  min-width: 460px;
+  // for mobile layout
+  padding: 30px 5% 0;
 }
 
-.input-container {
-  position: relative;
-  width: 100%;
+.footer {
+  text-align: end;
 
-  // 顯示錯誤提示
-  &.invalid {
-    .error-text {
-      visibility: visible;
+  button {
+    // for mobile layout
+    padding: 10px 20px;
+
+    // for mobile layout
+    --font-size: 16px;
+    line-height: 24px;
+  }
+
+  button:nth-last-child(n + 2) {
+    margin-right: 1em;
+  }
+
     }
   }
-}
 
-.input-title {
-  position: absolute;
-  top: 35px;
-  left: 26px;
-  color: var(--info);
-  font-family: 'Noto Sans TC';
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 15px;
-}
 
-input {
-  @include size(642px, 52px);
-  @include margin(30px, 405px, 0, 16px);
-  background-color: var(--input-background);
-  border: none;
-  border-bottom: 2px solid var(--info);
-  line-height: normal;
-  text-align: center;
-  // TODO:input的focus邊框沒有規定顏色，看要不要換其他顏色
-  &:hover,
-  &:focus {
-    border-color: inherit;
-    border: 1px solid var(--theme-color);
   }
 }
 
-// TODO:待串接後端驗證後，錯誤提示要改變input的border樣式
-.error-text {
-  visibility: hidden;
-  color: var(--invalid);
-  margin-top: 5px;
-  position: absolute;
-  left: 16px;
-  top: 80px;
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 15px;
+.form-row {
+  // 帳號欄
+  &:nth-child(1) {
+    span {
+      color: var(--main-text);
+    }
+  }
+
+  &:nth-last-child(2) {
+    margin-bottom: 40px;
+  }
 }
 
-.saveBtn {
-  @include size(116px, 46px);
-  @include position(absolute, 515px, 0, 0, 536px);
-  background-color: var(--theme-color);
-  border-radius: 50px;
-  color: var(--just-white);
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 26.06px;
-  &:hover {
-    background-color: var(--hover-color);
+@media screen and (min-width: $breakpoint) {
+  .setting-form {
+    margin-left: 65px;
   }
-  &:active,
-  &:focus {
-    background-color: var(--focus-color);
+
+  .form-area {
+    max-width: 642px;
+    padding: 30px 16px 0;
+  }
+
+  .footer {
+    button {
+      padding: 10px 40px;
+
+      --font-size: 18px;
+      line-height: 26px;
+    }
   }
 }
 </style>

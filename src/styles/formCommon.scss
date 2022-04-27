@@ -1,0 +1,198 @@
+.form-area {
+  label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 15px;
+    line-height: 15px;
+    color: var(--info);
+  }
+
+  input {
+    height: 24px;
+  }
+
+  textarea {
+    resize: none;
+  }
+
+  input,
+  textarea {
+    font-size: 19px;
+    line-height: 28px;
+
+    color: var(--placeholder);
+  }
+
+  input,
+  textarea {
+    border: none;
+    width: 100%;
+    background-color: transparent;
+
+    transition: color 0.35s ease-out;
+    color: var(--placeholder);
+
+    &:focus {
+      color: var(--main-text);
+    }
+  }
+
+  button {
+    border-radius: 50px;
+
+    background-color: var(--theme-color);
+    color: var(--just-white);
+
+    --font-size: 18px;
+    font-size: var(--font-size);
+    line-height: 26px;
+    font-weight: 700;
+
+    svg {
+      width: var(--font-size);
+      height: var(--font-size);
+
+      path {
+        fill: var(--just-white);
+      }
+    }
+
+    transition: color 0.35s ease-in, background-color 0.35s ease-in;
+
+    path {
+      transition: fill 0.35s ease-in;
+    }
+
+    &:focus,
+    &:disabled {
+      background-color: var(--focus-color);
+    }
+
+    &:hover,
+    &:active {
+      color: var(--theme-white);
+      background-color: var(--hover-color);
+
+      path {
+        fill: var(--theme-white);
+      }
+    }
+  }
+}
+
+.form-row {
+  position: relative;
+  margin-bottom: 30px;
+
+  // for sign in & sign up
+  width: 100%;
+
+  padding: 5px 15px 6px;
+  background-color: var(--input-background);
+  border-radius: 4px;
+
+  // 下底線
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0%;
+    left: 0%;
+    width: 100%;
+    height: 2px;
+    border-radius: 0px 0px 4px 4px;
+
+    transition: background-color 0.35s ease-in-out;
+    background-color: var(--info);
+  }
+
+  &.valid,
+  &:hover,
+  &:focus-within {
+    &::after {
+      background-color: var(--valid);
+    }
+  }
+
+  // 錯誤提示
+  &.invalid {
+    &::after {
+      background-color: var(--invalid);
+    }
+  }
+
+
+  &.is-loading {
+    background-size: 200% 100%;
+    background-image: linear-gradient(
+      110deg,
+      var(--input-background) 6%,
+      var(--theme-line) 18%,
+      var(--input-background) 33%
+    );
+    animation: scan 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  &.is-processing {
+    .hint,
+    p {
+      visibility: hidden;
+    }
+
+    &::after {
+      background-size: 200% 100%;
+      background-image: linear-gradient(
+        110deg,
+        var(--theme-line) 6%,
+        var(--theme-white) 18%,
+        var(--theme-line) 33%
+      );
+      animation: scan 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+  }
+  
+  @keyframes scan {
+    to {
+      background-position-x: -200%;
+    }
+  }
+
+  // 提示列
+  p,
+  .hint {
+    --hint-height: 15px;
+
+    position: absolute;
+    bottom: calc(0% - 5px - var(--hint-height));
+    right: 0%;
+
+    color: var(--info);
+    line-height: var(--hint-height);
+    font-size: 15px;
+
+    svg {
+      width: var(--hint-height);
+    }
+
+    // Vue transition
+    &.hint-enter-active,
+    &.hint-leave-active,
+    &.hint-move {
+      transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+    }
+
+    &.hint-enter {
+      opacity: 0.1;
+      transform: translateY(-25%);
+    }
+
+    &.hint-leave-to {
+      opacity: 0.1;
+      transform: translateY(-25%);
+    }
+  }
+
+  .error-hint {
+    left: 0%;
+    color: var(--invalid);
+  }
+}

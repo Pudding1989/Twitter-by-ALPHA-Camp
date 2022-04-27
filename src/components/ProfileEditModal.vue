@@ -189,9 +189,8 @@
             <!-- form area -->
             <div class="form-area">
               <div
-                for="name"
                 class="form-row d-flex flex-column"
-                :class="{ invalid: nameHint }"
+                :class="{ invalid: nameHint, 'is-processing': isProcessing }"
               >
                 <label for="name">名稱</label>
                 <input
@@ -200,6 +199,7 @@
                   id="name"
                   name="name"
                   maxlength="50"
+                  :disabled="isProcessing"
                 />
                 <p v-if="nameHint" class="error-hint">字數超出上限！</p>
                 <p>{{ nameCount }}/50</p>
@@ -207,7 +207,10 @@
 
               <div
                 class="form-row d-flex flex-column"
-                :class="{ invalid: descriptionHint }"
+                :class="{
+                  invalid: descriptionHint,
+                  'is-processing': isProcessing
+                }"
               >
                 <label for="description">自我介紹</label>
                 <textarea
@@ -215,6 +218,7 @@
                   id="description"
                   name="introduction"
                   maxlength="160"
+                  :disabled="isProcessing"
                   autofocus
                 />
                 <p v-if="descriptionHint" class="error-hint">字數超出上限！</p>
@@ -399,6 +403,7 @@ export default {
 
 <style lang="scss" scoped>
 @import '../styles/modalCommon.scss';
+@import '../styles/formCommon.scss';
 
 .modal {
   --modal-dialog-height: 680px;
@@ -441,15 +446,15 @@ export default {
     font-size: 18px;
     line-height: 18px;
 
-    &:hover {
-      background-color: var(--hover-color);
-      color: var(--theme-white);
-    }
-
     &:focus,
     &:disabled {
       background-color: var(--focus-color);
-      color: var(--just-white);
+    }
+
+    &:hover,
+    &:active {
+      color: var(--theme-white);
+      background-color: var(--hover-color);
     }
   }
 }
@@ -600,94 +605,20 @@ export default {
 .form-area {
   margin: 80px 15px 50px;
 
-  label {
-    display: block;
-    margin-bottom: 4px;
-    font-size: 15px;
-    line-height: 15px;
-    color: var(--info);
-  }
-
   input {
-    height: 24px;
     flex-shrink: 1;
   }
 
   textarea {
-    resize: none;
     flex-grow: 1;
-  }
-
-  input,
-  textarea {
-    border: none;
-    width: 100%;
-    background-color: transparent;
-
-    font-size: 19px;
-    line-height: 28px;
   }
 }
 
 .form-row {
-  position: relative;
-
-  padding: 5px 15px 6px;
-  background-color: var(--input-background);
-  border-radius: 4px;
-
-  // 下底線
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0%;
-    left: 0%;
-    width: 100%;
-    height: 2px;
-    border-radius: 0px 0px 4px 4px;
-
-    transition: background-color 0.35s ease-in-out;
-    background-color: var(--info);
-  }
-
-  &.valid,
-  &:hover,
-  &:focus-within {
-    &::after {
-      background-color: var(--valid);
-    }
-  }
-
-  // 錯誤提示
-  &.invalid {
-    &::after {
-      background-color: var(--invalid);
-    }
-  }
-
   // 自我介紹欄
   &:nth-child(2) {
     margin-top: 42px;
     height: 150px;
-  }
-
-  // 提示列
-  p {
-    --hint-height: 22px;
-    position: absolute;
-    bottom: calc(0% - var(--hint-height));
-  }
-
-  p {
-    right: 0%;
-    color: var(--info);
-    font-size: 15px;
-    line-height: var(--hint-height);
-  }
-
-  .error-hint {
-    left: 0%;
-    color: var(--invalid);
   }
 }
 
