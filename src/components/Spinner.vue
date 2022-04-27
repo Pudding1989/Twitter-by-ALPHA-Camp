@@ -18,9 +18,11 @@
 <style lang="scss" scoped>
 // 來源： https://codepen.io/jmak/pen/bGPzrQ?editors=1100
 
-$spinner-size: 36px;
-$spinner-color: var(--info);
-$overlay-color: transparent;
+.spinner {
+  --spinner-size: 36px;
+  --spinner-color: var(--info);
+  --overlay-color: transparent;
+}
 
 @mixin absolute-center {
   position: absolute;
@@ -34,10 +36,10 @@ $overlay-color: transparent;
 .spinner {
   // overlay
   z-index: 1;
-  background: $overlay-color;
+  background: var(--overlay-color);
   @include absolute-center;
 
-  font-size: $spinner-size;
+  font-size: var(--spinner-size);
   position: relative;
   display: inline-block;
   width: 1em;
@@ -74,7 +76,7 @@ $overlay-color: transparent;
 
 @keyframes spinner-fade {
   0% {
-    background-color: $spinner-color;
+    background-color: var(--spinner-color)
   }
 
   100% {

@@ -103,6 +103,7 @@
     </div>
 
     <button class="register" type="submit" :disabled="isProcessing">
+      <Spinner v-if="isProcessing" />
       註冊
     </button>
 
@@ -111,9 +112,11 @@
 </template>
 
 <script>
+import Spinner from '../components/Spinner.vue'
 import authorizationAPI from '../apis/authorization'
 
 export default {
+  components: { Spinner },
   data() {
     return {
       account: '',

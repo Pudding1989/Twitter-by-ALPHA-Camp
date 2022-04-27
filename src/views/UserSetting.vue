@@ -74,6 +74,7 @@
             type="submit"
             class="save"
           >
+            <Spinner v-if="isProcessing" />
             {{ isProcessing ? '儲存中..' : '儲存' }}
           </button>
         </div>
@@ -84,12 +85,14 @@
 
 <script>
 import Sidebar from '../components/Sidebar.vue'
+import Spinner from '../components/Spinner.vue'
 
 import userAPI from '../apis/user'
 
 export default {
   components: {
     Sidebar,
+    Spinner
   },
 
   data() {
@@ -271,6 +274,14 @@ export default {
     margin-right: 1em;
   }
 
+  button.save {
+    .spinner {
+      position: relative;
+
+      margin-right: 0.25em;
+
+      --spinner-size: inherit;
+      --spinner-color: var(--just-white);
     }
   }
 

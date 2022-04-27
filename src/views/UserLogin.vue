@@ -69,6 +69,7 @@
       class="login"
       type="submit"
     >
+      <Spinner v-if="isProcessing" />
     </button>
     <div class="link-container">
       <router-link to="/regist">註冊Alphitter</router-link>
@@ -79,9 +80,12 @@
 </template>
 
 <script>
+import Spinner from '../components/Spinner'
 import authorizationAPI from '../apis/authorization'
 
 export default {
+  components: { Spinner },
+
   data() {
     return {
       account: '',
