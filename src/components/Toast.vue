@@ -101,6 +101,49 @@ export default {
   box-shadow: 0px 4px 4px rgba(51, 51, 51, 0.04),
     0px 4px 16px rgba(51, 51, 51, 0.08);
   border-radius: 8px;
+
+  p {
+    word-break: break-word;
+  }
+
+  svg {
+    min-width: max-content;
+    margin-left: 10px;
+
+    circle {
+      transform-origin: center;
+      animation: grow 1.2s ease-out infinite;
+    }
+
+    path{
+      transform-origin: center;
+      animation: zoom 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.285) infinite alternate;
+    }
+  }
+
+  @keyframes grow {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+
+    100% {
+      transform: scale(1);
+      opacity: 0.12;
+    }
+  }
+
+  @keyframes zoom {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
 }
 
 // Vue transition
